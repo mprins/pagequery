@@ -6,19 +6,6 @@
  * @author	   Symon Bent <hendrybadao@gmail.com>
  */
 
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
-
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-
-require_once(DOKU_PLUGIN . 'syntax.php');
-require_once(DOKU_INC . 'inc/fulltext.php');
-require_once(DOKU_PLUGIN . 'pagequery/inc/pagequery.php');
-
-
-
 class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
 
     const MAX_COLS = 12;
@@ -230,12 +217,6 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
 
 
     function render($mode, Doku_Renderer $renderer, $opt) {
-
-        if ( ! PHP_MAJOR_VERSION >= 5 && ! PHP_MINOR_VERSION >= 3) {
-            $renderer->doc .= "You must have PHP 5.3 or greater to use this pagequery plugin.  Please upgrade PHP or use an older version of the plugin";
-            return false;
-        }
-
         $incl_ns = array();
         $excl_ns = array();
         $sort_opts = array();
@@ -247,6 +228,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             'link_to_top'  => $this->getLang('link_to_top'),
             'no_results'   => $this->getLang('no_results')
         );
+        require_once DOKU_PLUGIN . 'pagequery/pagequery.php';
         $pq = new PageQuery($lang);
 
         $query = $opt['query'];

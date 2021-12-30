@@ -1,19 +1,14 @@
 <?php
 
-if (!defined('DOKU_INC')) die();
-
 class action_plugin_pagequery extends DokuWiki_Action_Plugin {
 
-    /**
-     * Register the eventhandlers
-     */
-    function register(Doku_Event_Handler $controller) {
+    public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('TOOLBAR_DEFINE', 'AFTER', $this, 'insert_button', array ());
-        $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, '_purgecache');
+        $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'purgecache');
     }
 
 
-    function insert_button(& $event, $param) {
+    private function insert_button(Doku_Event $event, $param) {
         $event->data[] = array (
             'type'  => 'dialog',
             'title' => $this->getLang('pagequery'),
@@ -50,11 +45,11 @@ class action_plugin_pagequery extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      * @param mixed      $param not defined
      */
-    function _purgecache(&$event, $param) {
+    private function purgecache(Doku_Event $event, $param) {
         global $ID;
         global $conf;
         /** @var cache_parser $cache */
-        $cache = &$event->data;
+        $cache = $event->data;
 
         if(!isset($cache->page)) return;
         //purge only xhtml cache

@@ -1,14 +1,11 @@
 <?php
 
-require_once(DOKU_INC . 'inc/fulltext.php');
-
-
 class PageQuery {
 
-    private $lang = array();
+    private $lang;
     private $snippet_cnt = 0;
 
-    function __construct(Array $lang) {
+    public function __construct(array $lang) {
         $this->lang = $lang;
     }
 
@@ -413,7 +410,7 @@ class PageQuery {
     private function _proper($id) {
         $id = str_replace(':', ': ', $id); // make a little whitespace before words so ucwords can work!
         $id = str_replace('_', ' ', $id);
-        $id = utf8_ucwords($id);
+        $id = ucwords($id);
         $id = str_replace(': ', ':', $id);
         return $id;
     }
@@ -1121,7 +1118,6 @@ class PageQuery {
      *                              array(0, '...') =>  0 = normal row item (not heading)
      */
     function mgroup(&$sort_array, $keys, $group_opts = array()) {
-        $level = count($group_opts['key']) - 1;
         $prevs = array();
         $results = array();
         $idx = 0;
@@ -1137,10 +1133,11 @@ class PageQuery {
                 $results[] = $result;
             }
         } else {
+            $level = count($group_opts['key']) - 1;
             foreach($sort_array as $row) {
                 $this->_add_heading($results, $sort_array, $group_opts, $level, $idx, $prevs);
                 $result = array(0); // basic item (page link) is level 0
-                for ($i = 0; $i < count($keys); $i++) {
+                for ($i = 0, $iMax = count($keys); $i < $iMax; $i++) {
                     $result[] = $row[$keys[$i]];
                 }
                 $results[] = $result;
