@@ -3,43 +3,31 @@
  * PageQuery Plugin: search for and list pages, sorted/grouped by name, date, creator, etc
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author	   Symon Bent <hendrybadao@gmail.com>
+ * @author     Symon Bent <hendrybadao@gmail.com>
+ *
+ * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
  */
-
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
-
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-
-require_once(DOKU_PLUGIN . 'syntax.php');
-require_once(DOKU_INC . 'inc/fulltext.php');
-require_once(DOKU_PLUGIN . 'pagequery/inc/pagequery.php');
-
-
-
 class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
 
     const MAX_COLS = 12;
 
 
-    function getType() {
+    public function getType() {
         return 'substition';
     }
 
 
-    function getPType() {
+    public function getPType() {
         return 'block';
     }
 
 
-    function getSort() {
+    public function getSort() {
         return 98;
     }
 
 
-    function connectTo($mode) {
+    public function connectTo($mode) {
         // this regex allows multi-line syntax for easier composition/reading
         $this->Lexer->addSpecialPattern('\{\{pagequery>(?m).*?(?-m)\}\}', $mode, 'plugin_pagequery');
     }
@@ -55,7 +43,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
      *
      * @link https://www.dokuwiki.org/plugin:pagequery See PageQuery page for full details
      */
-    function handle($match, $state, $pos, Doku_Handler $handler) {
+    public function handle($match, $state, $pos, Doku_Handler $handler) {
 
         $opt = array();
         $match = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
@@ -94,10 +82,10 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
         $opt['nstitle']   = false;      // internal use currently...
 
         foreach ($params as $param) {
-            list($option, $value) = $this->_keyvalue($param, '=');
+            list($option, $value) = $this->keyvalue($param, '=');
             switch ($option) {
                 case 'casesort':
-				case 'fullregex':
+                case 'fullregex':
                 case 'fulltext':
                 case 'group':
                 case 'hidejump':
@@ -117,7 +105,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 case 'filter':
                     $fields = explode(',', $value);
                     foreach ($fields as $field) {
-                        list($key, $expr) = $this->_keyvalue($field);
+                        list($key, $expr) = $this->keyvalue($field);
                         // allow for a few common naming differences
                         switch ($key) {
                             case 'pagename':
@@ -229,13 +217,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
     }
 
 
-    function render($mode, Doku_Renderer $renderer, $opt) {
-
-        if ( ! PHP_MAJOR_VERSION >= 5 && ! PHP_MINOR_VERSION >= 3) {
-            $renderer->doc .= "You must have PHP 5.3 or greater to use this pagequery plugin.  Please upgrade PHP or use an older version of the plugin";
-            return false;
-        }
-
+    public function render($mode, Doku_Renderer $renderer, $opt) {
         $incl_ns = array();
         $excl_ns = array();
         $sort_opts = array();
@@ -247,17 +229,18 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             'link_to_top'  => $this->getLang('link_to_top'),
             'no_results'   => $this->getLang('no_results')
         );
+        require_once DOKU_PLUGIN . 'pagequery/PageQuery.php';
         $pq = new PageQuery($lang);
 
         $query = $opt['query'];
 
-        if ($mode == 'xhtml') {
+        if ($mode === 'xhtml') {
 
             // first get a raw list of matching results
 
             if ($opt['fulltext']) {
                 // full text searching (Dokuwiki style)
-                $results = $pq->page_search($query);
+                $results = $pq->pageSearch($query);
 
             } else {
                 // page id searching (i.e. namespace and name, faster)
@@ -265,17 +248,17 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 // fullregex option considers entire query to be a regex
                 // over the whole page id, incl. namespace
                 if ( ! $opt['fullregex']) {
-                    list($query, $incl_ns, $excl_ns) = $pq->parse_ns_query($query);
+                    list($query, $incl_ns, $excl_ns) = $pq->parseNamespaceQuery($query);
                 }
 
                 // Allow for a lazy man's option!
-                if ($query == '*') {
+                if ($query === '*') {
                     $query = '.*';
                 }
                 // search by page name or path only
-                $results = $pq->page_lookup($query, $opt['fullregex'], $incl_ns, $excl_ns);
+                $results = $pq->pageLookup($query, $opt['fullregex'], $incl_ns, $excl_ns);
             }
-            $results = $pq->validate_pages($results, $opt['hidestart'], $opt['maxns']);
+            $results = $pq->validatePages($results, $opt['hidestart'], $opt['maxns']);
 
             $no_result = false;
             if ($results === false) {
@@ -285,10 +268,10 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             } elseif ( ! empty($results)) {
 
                 // prepare the necessary sorting arrays, as per users options
-                list($sort_array, $sort_opts, $group_opts) = $pq->build_sorting_array($results, $opt);
+                list($sort_array, $sort_opts, $group_opts) = $pq->buildSortingArray($results, $opt);
 
                 // meta data filtering of the list is next
-                $sort_array = $pq->filter_meta($sort_array, $opt['filter']);
+                $sort_array = $pq->filterMetadata($sort_array, $opt['filter']);
                 if (empty($sort_array)) {
                     $no_result = true;
                     $message = $this->getLang("empty_filter");
@@ -326,7 +309,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 }
             }
             return true;
-        } else if ($mode == 'metadata' ) {
+        } else if ($mode === 'metadata' ) {
             // this is a pagequery page needing PARSER_CACHE_USE event trigger;
             $renderer->meta['pagequery'] = TRUE;
             unset($renderer->persistent['pagequery']);
@@ -344,7 +327,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
      * @param string $delim
      * @return array
      */
-    private function _keyvalue($str, $delim = ':') {
+    private function keyvalue($str, $delim = ':') {
         $parts = explode($delim, $str);
         $key = isset($parts[0]) ? $parts[0] : '';
         $value = isset($parts[1]) ? $parts[1] : '';
