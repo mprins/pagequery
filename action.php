@@ -1,25 +1,29 @@
 <?php
 
+/**
+ *
+ * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ */
 class action_plugin_pagequery extends DokuWiki_Action_Plugin {
 
     public function register(Doku_Event_Handler $controller) {
-        $controller->register_hook('TOOLBAR_DEFINE', 'AFTER', $this, 'insert_button', array ());
+        $controller->register_hook('TOOLBAR_DEFINE', 'AFTER', $this, 'insertButton', array ());
         $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'purgecache');
     }
 
 
-    private function insert_button(Doku_Event $event, $param) {
+    private function insertButton(Doku_Event $event, $param) {
         $event->data[] = array (
             'type'  => 'dialog',
             'title' => $this->getLang('pagequery'),
             'icon'  => '../../plugins/pagequery/images/pagequery.png',
-            'html'  => $this->_cheatsheet(),
+            'html'  => $this->pqCheatsheet(),
             'block' => false
         );
     }
 
 
-    private function _cheatsheet() {
+    private function pqCheatsheet() {
         $list = file(DOKU_PLUGIN . 'pagequery/res/toolbar', FILE_IGNORE_NEW_LINES);
         $text = '<div id="pq-dialog" title="PageQuery Cheatsheet" style="font-size:75%;">' . PHP_EOL;
         foreach($list as $line) {

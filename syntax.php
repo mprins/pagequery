@@ -3,30 +3,31 @@
  * PageQuery Plugin: search for and list pages, sorted/grouped by name, date, creator, etc
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author	   Symon Bent <hendrybadao@gmail.com>
+ * @author     Symon Bent <hendrybadao@gmail.com>
+ *
+ * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
  */
-
 class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
 
     const MAX_COLS = 12;
 
 
-    function getType() {
+    public function getType() {
         return 'substition';
     }
 
 
-    function getPType() {
+    public function getPType() {
         return 'block';
     }
 
 
-    function getSort() {
+    public function getSort() {
         return 98;
     }
 
 
-    function connectTo($mode) {
+    public function connectTo($mode) {
         // this regex allows multi-line syntax for easier composition/reading
         $this->Lexer->addSpecialPattern('\{\{pagequery>(?m).*?(?-m)\}\}', $mode, 'plugin_pagequery');
     }
@@ -42,7 +43,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
      *
      * @link https://www.dokuwiki.org/plugin:pagequery See PageQuery page for full details
      */
-    function handle($match, $state, $pos, Doku_Handler $handler) {
+    public function handle($match, $state, $pos, Doku_Handler $handler) {
 
         $opt = array();
         $match = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
@@ -81,10 +82,10 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
         $opt['nstitle']   = false;      // internal use currently...
 
         foreach ($params as $param) {
-            list($option, $value) = $this->_keyvalue($param, '=');
+            list($option, $value) = $this->keyvalue($param, '=');
             switch ($option) {
                 case 'casesort':
-				case 'fullregex':
+                case 'fullregex':
                 case 'fulltext':
                 case 'group':
                 case 'hidejump':
@@ -104,7 +105,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 case 'filter':
                     $fields = explode(',', $value);
                     foreach ($fields as $field) {
-                        list($key, $expr) = $this->_keyvalue($field);
+                        list($key, $expr) = $this->keyvalue($field);
                         // allow for a few common naming differences
                         switch ($key) {
                             case 'pagename':
@@ -216,7 +217,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
     }
 
 
-    function render($mode, Doku_Renderer $renderer, $opt) {
+    public function render($mode, Doku_Renderer $renderer, $opt) {
         $incl_ns = array();
         $excl_ns = array();
         $sort_opts = array();
@@ -326,7 +327,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
      * @param string $delim
      * @return array
      */
-    private function _keyvalue($str, $delim = ':') {
+    private function keyvalue($str, $delim = ':') {
         $parts = explode($delim, $str);
         $key = isset($parts[0]) ? $parts[0] : '';
         $value = isset($parts[1]) ? $parts[1] : '';
