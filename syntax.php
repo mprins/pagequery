@@ -229,18 +229,18 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             'link_to_top'  => $this->getLang('link_to_top'),
             'no_results'   => $this->getLang('no_results')
         );
-        require_once DOKU_PLUGIN . 'pagequery/pagequery.php';
+        require_once DOKU_PLUGIN . 'pagequery/PageQuery.php';
         $pq = new PageQuery($lang);
 
         $query = $opt['query'];
 
-        if ($mode == 'xhtml') {
+        if ($mode === 'xhtml') {
 
             // first get a raw list of matching results
 
             if ($opt['fulltext']) {
                 // full text searching (Dokuwiki style)
-                $results = $pq->page_search($query);
+                $results = $pq->pageSearch($query);
 
             } else {
                 // page id searching (i.e. namespace and name, faster)
@@ -248,17 +248,17 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 // fullregex option considers entire query to be a regex
                 // over the whole page id, incl. namespace
                 if ( ! $opt['fullregex']) {
-                    list($query, $incl_ns, $excl_ns) = $pq->parse_ns_query($query);
+                    list($query, $incl_ns, $excl_ns) = $pq->parseNamespaceQuery($query);
                 }
 
                 // Allow for a lazy man's option!
-                if ($query == '*') {
+                if ($query === '*') {
                     $query = '.*';
                 }
                 // search by page name or path only
-                $results = $pq->page_lookup($query, $opt['fullregex'], $incl_ns, $excl_ns);
+                $results = $pq->pageLookup($query, $opt['fullregex'], $incl_ns, $excl_ns);
             }
-            $results = $pq->validate_pages($results, $opt['hidestart'], $opt['maxns']);
+            $results = $pq->validatePages($results, $opt['hidestart'], $opt['maxns']);
 
             $no_result = false;
             if ($results === false) {
@@ -268,10 +268,10 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             } elseif ( ! empty($results)) {
 
                 // prepare the necessary sorting arrays, as per users options
-                list($sort_array, $sort_opts, $group_opts) = $pq->build_sorting_array($results, $opt);
+                list($sort_array, $sort_opts, $group_opts) = $pq->buildSortingArray($results, $opt);
 
                 // meta data filtering of the list is next
-                $sort_array = $pq->filter_meta($sort_array, $opt['filter']);
+                $sort_array = $pq->filterMetadata($sort_array, $opt['filter']);
                 if (empty($sort_array)) {
                     $no_result = true;
                     $message = $this->getLang("empty_filter");
@@ -309,7 +309,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 }
             }
             return true;
-        } else if ($mode == 'metadata' ) {
+        } else if ($mode === 'metadata' ) {
             // this is a pagequery page needing PARSER_CACHE_USE event trigger;
             $renderer->meta['pagequery'] = TRUE;
             unset($renderer->persistent['pagequery']);
