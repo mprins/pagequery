@@ -53,7 +53,7 @@ class PageQuery
     final public function renderAsHtml(string $layout, $sorted_results, $opt, $count)
     {
         $this->snippet_cnt = $opt['snippet']['count'];
-        $render_type       = '_render_as_html_' . $layout;
+        $render_type       = 'renderAsHtml' . $layout;
         return $this->$render_type($sorted_results, $opt, $count);
     }
 
@@ -793,7 +793,7 @@ class PageQuery
      * @param int   $count => count of results
      * @return string => HTML rendered list
      */
-    protected function _render_as_html_table($sorted_results, $opt, $count): string
+    protected function renderAsHtmltable($sorted_results, $opt, $count): string
     {
         $ratios           = array(.80, 1.3, 1.17, 1.1, 1.03, .96, .90);   // height ratios: link, h1, h2, h3, h4, h5, h6
         $render           = '';
@@ -1082,7 +1082,7 @@ class PageQuery
      *
      * @return string HTML rendered list
      */
-    protected function _render_as_html_column(array $sorted_results, array $opt, int $count): string
+    protected function renderAsHtmlcolumn(array $sorted_results, array $opt, int $count): string
     {
         $prev_was_heading = false;
         $cont_level       = 1;
