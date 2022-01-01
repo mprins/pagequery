@@ -21,14 +21,16 @@
  * @group plugin_pagequery
  * @group plugins
  */
-class general_plugin_pagequery_test extends DokuWikiTest {
+class general_plugin_pagequery_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('pagequery');
 
     /**
      * Simple test to make sure the plugin.info.txt is in correct format
      */
-    public function test_plugininfo(): void {
+    public function test_plugininfo(): void
+    {
         $file = __DIR__ . '/../plugin.info.txt';
         $this->assertFileExists($file);
 
@@ -52,10 +54,13 @@ class general_plugin_pagequery_test extends DokuWikiTest {
     /**
      * test if plugin is loaded.
      */
-    public function test_plugin_pagequery_isloaded() {
+    public function test_plugin_pagequery_isloaded()
+    {
         global $plugin_controller;
         $this->assertContains(
-            'pagequery', $plugin_controller->getList(), "pagequery plugin is loaded"
+            'pagequery',
+            $plugin_controller->getList(),
+            "pagequery plugin is loaded"
         );
     }
 }
