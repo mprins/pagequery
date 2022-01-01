@@ -445,6 +445,7 @@ class PageQuery
      */
     final public function pageSearch(string $query): array
     {
+        $highlight = [];
         return array_keys(ft_pageSearch($query, $highlight));
     }
 
@@ -977,8 +978,9 @@ class PageQuery
         bool $raw = false
     ): string {
         $id = (strpos($id, ':') === false) ? ':' . $id : $id;   // : needed for root pages (root level)
-
-        $link   = html_wikilink($id, $display);
+        // TODO find out if this is an API change in DW
+        //        $link   = html_wikilink($id, $display);
+        $link   = html_wikilink($id);
         $type   = $opt['snippet']['type'];
         $inline = '';
         $after  = '';
