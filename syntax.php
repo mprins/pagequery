@@ -1,37 +1,38 @@
 <?php
+
 /**
  * PageQuery Plugin: search for and list pages, sorted/grouped by name, date, creator, etc
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Symon Bent <hendrybadao@gmail.com>
  *
- * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ * @phpcs      :disable Squiz.Classes.ValidClassName.NotCamelCaps
  */
-class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
+class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
+{
 
     const MAX_COLS = 12;
 
-
-    public function getType() {
+    public function getType()
+    {
         return 'substition';
     }
 
-
-    public function getPType() {
+    public function getPType()
+    {
         return 'block';
     }
 
-
-    public function getSort() {
+    public function getSort()
+    {
         return 98;
     }
 
-
-    public function connectTo($mode) {
+    public function connectTo($mode)
+    {
         // this regex allows multi-line syntax for easier composition/reading
         $this->Lexer->addSpecialPattern('\{\{pagequery>(?m).*?(?-m)\}\}', $mode, 'plugin_pagequery');
     }
-
 
     /**
      * Parses all the pagequery options:
@@ -43,10 +44,10 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
      *
      * @link https://www.dokuwiki.org/plugin:pagequery See PageQuery page for full details
      */
-    public function handle($match, $state, $pos, Doku_Handler $handler) {
-
-        $opt = array();
-        $match = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
+    public function handle($match, $state, $pos, Doku_Handler $handler)
+    {
+        $opt    = array();
+        $match  = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
         $params = explode(';', $match);
         // remove any pre/trailing spaces due to multi-line syntax
         $params = array_map('trim', $params);
@@ -163,12 +164,12 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                         break;
                     } else {
                         $options = explode(',', $value);
-                        $type = ( ! empty($options[0])) ? $options[0] : $opt['snippet']['type'];
-                        $count = ( ! empty($options[1])) ? $options[1] : $opt['snippet']['count'];
-                        $extent = ( ! empty($options[2])) ? $options[2] : $opt['snippet']['extent'];
+                        $type    = (!empty($options[0])) ? $options[0] : $opt['snippet']['type'];
+                        $count   = (!empty($options[1])) ? $options[1] : $opt['snippet']['count'];
+                        $extent  = (!empty($options[2])) ? $options[2] : $opt['snippet']['extent'];
 
                         $valid = array('none', 'tooltip', 'inline', 'plain', 'quoted');
-                        if ( ! in_array($type, $valid)) {
+                        if (!in_array($type, $valid)) {
                             $type = $default;  // empty snippet type => tooltip
                         }
                         $opt['snippet'] = array('type' => $type, 'count' => $count, 'extent' => $extent);
@@ -201,13 +202,13 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                     }
                     break;
                 case 'layout':
-                    if ( ! in_array($value, array('table', 'column'))) {
+                    if (!in_array($value, array('table', 'column'))) {
                         $value = 'table';
                     }
                     $opt['layout'] = $value;
                     break;
                 case 'fontsize':
-                    if ( ! empty($value)) {
+                    if (!empty($value)) {
                         $opt['fontsize'] = $value;
                     }
                     break;
@@ -216,13 +217,28 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
         return $opt;
     }
 
+    /**
+     * Split a string into key => value parts.
+     *
+     * @param string $str
+     * @param string $delim
+     * @return array
+     */
+    private function keyvalue($str, $delim = ':')
+    {
+        $parts = explode($delim, $str);
+        $key   = isset($parts[0]) ? $parts[0] : '';
+        $value = isset($parts[1]) ? $parts[1] : '';
+        return array($key, $value);
+    }
 
-    public function render($mode, Doku_Renderer $renderer, $opt) {
-        $incl_ns = array();
-        $excl_ns = array();
-        $sort_opts = array();
+    public function render($mode, Doku_Renderer $renderer, $opt)
+    {
+        $incl_ns    = array();
+        $excl_ns    = array();
+        $sort_opts  = array();
         $group_opts = array();
-        $message = '';
+        $message    = '';
 
         $lang = array(
             'jump_section' => $this->getLang('jump_section'),
@@ -235,19 +251,17 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
         $query = $opt['query'];
 
         if ($mode === 'xhtml') {
-
             // first get a raw list of matching results
 
             if ($opt['fulltext']) {
                 // full text searching (Dokuwiki style)
                 $results = $pq->pageSearch($query);
-
             } else {
                 // page id searching (i.e. namespace and name, faster)
 
                 // fullregex option considers entire query to be a regex
                 // over the whole page id, incl. namespace
-                if ( ! $opt['fullregex']) {
+                if (!$opt['fullregex']) {
                     list($query, $incl_ns, $excl_ns) = $pq->parseNamespaceQuery($query);
                 }
 
@@ -263,10 +277,8 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
             $no_result = false;
             if ($results === false) {
                 $no_result = true;
-                $message = $this->getLang('regex_error');
-
-            } elseif ( ! empty($results)) {
-
+                $message   = $this->getLang('regex_error');
+            } elseif (!empty($results)) {
                 // prepare the necessary sorting arrays, as per users options
                 list($sort_array, $sort_opts, $group_opts) = $pq->buildSortingArray($results, $opt);
 
@@ -274,15 +286,14 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
                 $sort_array = $pq->filterMetadata($sort_array, $opt['filter']);
                 if (empty($sort_array)) {
                     $no_result = true;
-                    $message = $this->getLang("empty_filter");
+                    $message   = $this->getLang("empty_filter");
                 }
             } else {
                 $no_result = true;
             }
 
             // successful search...
-            if ( ! $no_result) {
-
+            if (!$no_result) {
                 // now do the sorting
                 $pq->msort($sort_array, $sort_opts);
 
@@ -296,42 +307,30 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin {
 
                 // and finally the grouping
                 $keys = array('name', 'id', 'title', 'abstract', 'display');
-                if ( ! $opt['group']) $group_opts = array();
+                if (!$opt['group']) {
+                    $group_opts = array();
+                }
                 $sorted_results = $pq->mgroup($sort_array, $keys, $group_opts);
 
                 // and out to the page
                 $renderer->doc .= $pq->render_as_html($opt['layout'], $sorted_results, $opt, $count);
-
-            // no results...
+                // no results...
             } else {
-                if ( ! $opt['hidemsg']) {
+                if (!$opt['hidemsg']) {
                     $renderer->doc .= $pq->render_as_empty($query, $message);
                 }
             }
             return true;
-        } else if ($mode === 'metadata' ) {
-            // this is a pagequery page needing PARSER_CACHE_USE event trigger;
-            $renderer->meta['pagequery'] = TRUE;
-            unset($renderer->persistent['pagequery']);
-            return true;
         } else {
-            return false;
+            if ($mode === 'metadata') {
+                // this is a pagequery page needing PARSER_CACHE_USE event trigger;
+                $renderer->meta['pagequery'] = true;
+                unset($renderer->persistent['pagequery']);
+                return true;
+            } else {
+                return false;
+            }
         }
-    }
-
-
-    /**
-     * Split a string into key => value parts.
-     *
-     * @param string $str
-     * @param string $delim
-     * @return array
-     */
-    private function keyvalue($str, $delim = ':') {
-        $parts = explode($delim, $str);
-        $key = isset($parts[0]) ? $parts[0] : '';
-        $value = isset($parts[1]) ? $parts[1] : '';
-        return array($key, $value);
     }
 }
 

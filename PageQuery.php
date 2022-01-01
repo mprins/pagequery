@@ -2,7 +2,8 @@
 
 use dokuwiki\Utf8\PhpString;
 
-class PageQuery {
+class PageQuery
+{
     const MSORT_KEEP_ASSOC = 'msort01';
     const MSORT_NUMERIC = 'msort02';
     const MSORT_REGULAR = 'msort03';
@@ -23,7 +24,8 @@ class PageQuery {
     // returns first $count letters from $text in lowercase
     private $snippet_cnt = 0;
 
-    public function __construct(array $lang) {
+    public function __construct(array $lang)
+    {
         $this->lang = $lang;
     }
 
@@ -34,21 +36,22 @@ class PageQuery {
      * @param string $error
      * @return string
      */
-    final public function render_as_empty($query, $error = ''): string {
-
+    final public function render_as_empty($query, $error = ''): string
+    {
         $render = '<div class="pagequery no-border">' . DOKU_LF;
         $render .= '<p class="no-results"><span>pagequery</span>' . sprintf(
                 $this->lang["no_results"],
                 '<strong>' . $query . '</strong>'
             ) . '</p>' . DOKU_LF;
-        if(!empty($error)) {
+        if (!empty($error)) {
             $render .= '<p class="no-results">' . $error . '</p>' . DOKU_LF;
         }
         $render .= '</div>' . DOKU_LF;
         return $render;
     }
 
-    final public function render_as_html(string $layout, $sorted_results, $opt, $count) {
+    final public function render_as_html(string $layout, $sorted_results, $opt, $count)
+    {
         $this->snippet_cnt = $opt['snippet']['count'];
         $render_type       = '_render_as_html_' . $layout;
         return $this->$render_type($sorted_results, $opt, $count);
@@ -60,7 +63,8 @@ class PageQuery {
      * @param string $query user page query
      * @return array        processed query with necessary regex markup for namespace recognition
      */
-    final public function parseNamespaceQuery(string $query): array {
+    final public function parseNamespaceQuery(string $query): array
+    {
         global $INFO;
 
         $cur_ns   = $INFO['namespace'];
@@ -68,13 +72,13 @@ class PageQuery {
         $excl_ns  = array();
         $page_qry = '';
         $tokens   = explode(' ', trim($query));
-        if(count($tokens) == 1) {
+        if (count($tokens) == 1) {
             $page_qry = $query;
         } else {
-            foreach($tokens as $token) {
-                if(preg_match('/^(?:\^|-ns:)(.+)$/u', $token, $matches)) {
+            foreach ($tokens as $token) {
+                if (preg_match('/^(?:\^|-ns:)(.+)$/u', $token, $matches)) {
                     $excl_ns[] = resolve_id($cur_ns, $matches[1]);  // also resolve relative and parent ns
-                } elseif(preg_match('/^(?:@|ns:)(.+)$/u', $token, $matches)) {
+                } elseif (preg_match('/^(?:@|ns:)(.+)$/u', $token, $matches)) {
                     $incl_ns[] = resolve_id($cur_ns, $matches[1]);
                 } else {
                     $page_qry .= ' ' . $token;
@@ -95,7 +99,8 @@ class PageQuery {
      *                  $sort_opts      sorting options for the msort function
      *                  $group_opts     grouping options for the mgroup function
      */
-    final public function buildSortingArray(array $ids, array $opt): array {
+    final public function buildSortingArray(array $ids, array $opt): array
+    {
         global $conf;
 
         $sort_array = array();
@@ -119,19 +124,18 @@ class PageQuery {
         $col_keys  = array_merge($opt['sort'], $extrakeys);
 
         // it is more efficient to get all the back-links at once from the indexer metadata
-        if(isset($col_keys['backlinks'])) {
+        if (isset($col_keys['backlinks'])) {
             $backlinks = idx_get_indexer()->lookupKey('relation_references', $ids);
         }
 
-        foreach($ids as $id) {
-
+        foreach ($ids as $id) {
             // getting metadata is very time-consuming, hence ONCE per displayed row
             $meta = p_get_metadata($id, '', METADATA_DONT_RENDER);
 
-            if(!isset($meta['date']['created'])) {
+            if (!isset($meta['date']['created'])) {
                 $meta['date']['created'] = 0;
             }
-            if(!isset($meta['date']['modified'])) {
+            if (!isset($meta['date']['modified'])) {
                 $meta['date']['modified'] = $meta['date']['created'];
             }
             // establish page name (without namespace)
@@ -167,9 +171,9 @@ class PageQuery {
             $real_date = 0;
 
             // ...optional columns
-            foreach($col_keys as $key => $void) {
+            foreach ($col_keys as $key => $void) {
                 $value = '';
-                switch($key) {
+                switch ($key) {
                     case 'a':
                     case 'ab':
                     case 'abc':
@@ -185,7 +189,7 @@ class PageQuery {
                         break;
                     case 'ns':
                         $value = getNS($id);
-                        if(empty($value)) {
+                        if (empty($value)) {
                             $value = '[' . $conf['start'] . ']';
                         }
                         break;
@@ -211,17 +215,17 @@ class PageQuery {
                     default:
                         // date sorting types (groupable)
                         $dtype = $key[0];
-                        if($dtype === 'c' || $dtype === 'm') {
+                        if ($dtype === 'c' || $dtype === 'm') {
                             // we only set real date once per id (needed for grouping)
                             // not per sort column--the date should remain same across all columns
                             // this is always the last column!
-                            if($real_date == 0) {
+                            if ($real_date == 0) {
                                 $real_date                  = ($dtype === 'c') ?
                                     $meta['date']['created'] : $meta['date']['modified'];
                                 $row[self::MGROUP_REALDATE] = $real_date;
                             }
                             // only set date formats once per sort column/key (not per id!), i.e. on first row
-                            if($cnt == 0) {
+                            if ($cnt == 0) {
                                 $dformat[$key] = $this->dateFormat($key);
                                 // collect date in word format for potential use in grouping
                                 $wformat[$key] = ($opt['spelldate']) ? $this->dateFormatWords($dformat[$key]) : '';
@@ -242,27 +246,27 @@ class PageQuery {
             $matched = preg_match_all('/\{(.+?)\}/', $display, $matches, PREG_SET_ORDER);
 
             // first try to use the custom column names as entered by user
-            if($matched > 0) {
-                foreach($matches as $match) {
+            if ($matched > 0) {
+                foreach ($matches as $match) {
                     $key   = $match[1];
                     $value = null;
-                    if(isset($row[$key])) {
+                    if (isset($row[$key])) {
                         $value = $row[$key];
-                    } elseif(isset($meta[$key])) {
+                    } elseif (isset($meta[$key])) {
                         $value = $meta[$key];
                         // allow for nested meta keys (e.g. date:created)
-                    } elseif(strpos($key, ':') !== false) {
+                    } elseif (strpos($key, ':') !== false) {
                         $keys = explode(':', $key);
-                        if(isset($meta[$keys[0]][$keys[1]])) {
+                        if (isset($meta[$keys[0]][$keys[1]])) {
                             $value = $meta[$keys[0]][$keys[1]];
                         }
-                    } elseif($key === 'mdate') {
+                    } elseif ($key === 'mdate') {
                         $value = $meta['date']['modified'];
-                    } elseif($key === 'cdate') {
+                    } elseif ($key === 'cdate') {
                         $value = $meta['date']['created'];
                     }
-                    if(!is_null($value)) {
-                        if(strpos($key, 'date') !== false) {
+                    if (!is_null($value)) {
+                        if (strpos($key, 'date') !== false) {
                             $value = utf8_encode(strftime($opt['dformat'], $value));
                         }
                         $display = str_replace($match[0], $value, $display);
@@ -271,9 +275,8 @@ class PageQuery {
 
                 // try to match any metadata field; to allow for plain single word display settings
                 // e.g. display=title or display=name
-            } elseif(isset($row[$display])) {
+            } elseif (isset($row[$display])) {
                 $display = $row[$display];
-
                 // if all else fails then use the page name (always available)
             } else {
                 $display = $row['name'];
@@ -284,12 +287,11 @@ class PageQuery {
         }
 
         $idx = 0;
-        foreach($opt['sort'] as $key => $value) {
-
+        foreach ($opt['sort'] as $key => $value) {
             $sort_opts['key'][] = $key;
 
             // now the sort direction
-            switch($value) {
+            switch ($value) {
                 case 'a':
                 case 'asc':
                     $dir = self::MSORT_ASC;
@@ -299,7 +301,7 @@ class PageQuery {
                     $dir = self::MSORT_DESC;
                     break;
                 default:
-                    switch($key) {
+                    switch ($key) {
                         // sort dates descending by default; text ascending
                         case 'a':
                         case 'ab':
@@ -320,13 +322,13 @@ class PageQuery {
             $sort_opts['dir'][] = $dir;
 
             // set the sort array's data type
-            switch($key) {
+            switch ($key) {
                 case 'mdate':
                 case 'cdate':
                     $type = self::MSORT_NUMERIC;
                     break;
                 default:
-                    if($opt['casesort']) {
+                    if ($opt['casesort']) {
                         // case sensitive: a-z then A-Z
                         $type = ($opt['natsort']) ? self::MSORT_NAT : self::MSORT_STRING;
                     } else {
@@ -337,7 +339,7 @@ class PageQuery {
             $sort_opts['type'][] = $type;
 
             // now establish grouping options
-            switch($key) {
+            switch ($key) {
                 // name strings and full dates cannot be meaningfully grouped (no duplicates!)
                 case 'mdate':
                 case 'cdate':
@@ -352,7 +354,7 @@ class PageQuery {
                 default:
                     $group_by = self::MGROUP_HEADING;
             }
-            if($group_by !== self::MGROUP_NONE) {
+            if ($group_by !== self::MGROUP_NONE) {
                 $group_opts['key'][$idx]     = $key;
                 $group_opts['type'][$idx]    = $group_by;
                 $group_opts['dformat'][$idx] = $wformat[$key];
@@ -363,19 +365,21 @@ class PageQuery {
         return array($sort_array, $sort_opts, $group_opts);
     }
 
-    private function first(string $text, $count): string {
+    private function first(string $text, $count): string
+    {
         return ($count > 0) ? PhpString::substr(PhpString::strtolower($text), 0, $count) : '';
     }
 
-    private function joinKeysIf($delim, $arr) {
+    private function joinKeysIf($delim, $arr)
+    {
         $result = '';
-        if(!empty($arr)) {
-            foreach($arr as $key => $value) {
-                if($value === true) {
+        if (!empty($arr)) {
+            foreach ($arr as $key => $value) {
+                if ($value === true) {
                     $result .= $key . $delim;
                 }
             }
-            if(!empty($result)) {
+            if (!empty($result)) {
                 $result = substr($result, 0, -1);
             }
         }
@@ -388,15 +392,16 @@ class PageQuery {
      * @param string $key
      * @return string
      */
-    private function dateFormat(string $key): string {
+    private function dateFormat(string $key): string
+    {
         $dkey = array();
-        if(strpos($key, 'year') !== false) {
+        if (strpos($key, 'year') !== false) {
             $dkey[] = '%Y';
         }
-        if(strpos($key, 'month') !== false) {
+        if (strpos($key, 'month') !== false) {
             $dkey[] = '%m';
         }
-        if(strpos($key, 'day') !== false) {
+        if (strpos($key, 'day') !== false) {
             $dkey[] = '%d';
         }
         return implode('-', $dkey);
@@ -409,9 +414,10 @@ class PageQuery {
      * @param string $dformat
      * @return string
      */
-    private function dateFormatWords(string $dformat): string {
+    private function dateFormatWords(string $dformat): string
+    {
         $wformat = '';
-        switch($dformat) {
+        switch ($dformat) {
             case '%m':
                 $wformat = "%B";
                 break;
@@ -437,7 +443,8 @@ class PageQuery {
      * @param string $query
      * @return int[]|string[]
      */
-    final public function pageSearch(string $query): array {
+    final public function pageSearch(string $query): array
+    {
         return array_keys(ft_pageSearch($query, $highlight));
     }
 
@@ -445,25 +452,26 @@ class PageQuery {
      * A heavily customised version of _ft_pageLookup in inc/fulltext.php
      * no sorting!
      */
-    final public function pageLookup($query, $fullregex, $incl_ns, $excl_ns) {
+    final public function pageLookup($query, $fullregex, $incl_ns, $excl_ns)
+    {
         global $conf;
 
         $query = trim($query);
         $pages = file($conf['indexdir'] . '/page.idx');
 
-        if(!$fullregex) {
+        if (!$fullregex) {
             // first deal with excluded namespaces, then included, order matters!
             $pages = $this->filterNamespaces($pages, $excl_ns, true);
             $pages = $this->filterNamespaces($pages, $incl_ns, false);
         }
 
-        foreach($pages as $i => $iValue) {
+        foreach ($pages as $i => $iValue) {
             $page = $iValue;
-            if(!page_exists($page) || isHiddenPage($page)) {
+            if (!page_exists($page) || isHiddenPage($page)) {
                 unset($pages[$i]);
                 continue;
             }
-            if(!$fullregex) {
+            if (!$fullregex) {
                 $page = noNS($page);
             }
             /*
@@ -474,13 +482,13 @@ class PageQuery {
              * The @ prevents problems with invalid queries!
              */
             $matched = @preg_match('/' . $query . '/i', $page);
-            if($matched === false) {
+            if ($matched === false) {
                 return false;
-            } elseif($matched == 0) {
+            } elseif ($matched == 0) {
                 unset($pages[$i]);
             }
         }
-        if(count($pages) > 0) {
+        if (count($pages) > 0) {
             return $pages;
         } else {
             // we always return an array type
@@ -495,13 +503,14 @@ class PageQuery {
      * @param string $exclude true = exclude
      * @return array
      */
-    private function filterNamespaces(array $pages, array $ns_qry, string $exclude): array {
+    private function filterNamespaces(array $pages, array $ns_qry, string $exclude): array
+    {
         $invert = ($exclude) ? PREG_GREP_INVERT : 0;
-        foreach($ns_qry as $ns) {
+        foreach ($ns_qry as $ns) {
             //  we only look for namespace from beginning of the id
             $regexes[] = '^' . $ns . ':.*';
         }
-        if(!empty($regexes)) {
+        if (!empty($regexes)) {
             $regex  = '/(' . implode('|', $regexes) . ')/';
             $result = array_values(preg_grep($regex, $pages, $invert));
         } else {
@@ -510,7 +519,8 @@ class PageQuery {
         return $result;
     }
 
-    final public function validatePages(array $pages, bool $nostart = true, int $maxns = 0): array {
+    final public function validatePages(array $pages, bool $nostart = true, int $maxns = 0): array
+    {
         global $conf;
 
         $pages = array_map('trim', $pages);
@@ -518,13 +528,13 @@ class PageQuery {
         // check ACL permissions, too many ns levels, and remove any 'start' pages as needed
         $start  = $conf['start'];
         $offset = strlen($start);
-        foreach($pages as $idx => $name) {
-            if($nostart && substr($name, -$offset) == $start) {
+        foreach ($pages as $idx => $name) {
+            if ($nostart && substr($name, -$offset) == $start) {
                 unset($pages[$idx]);
-            } elseif($maxns > 0 && (substr_count($name, ':')) > $maxns) {
+            } elseif ($maxns > 0 && (substr_count($name, ':')) > $maxns) {
                 unset($pages[$idx]);
                 // TODO: this function is one of slowest in the plugin; solutions?
-            } elseif(auth_quickaclcheck($pages[$idx]) < AUTH_READ) {
+            } elseif (auth_quickaclcheck($pages[$idx]) < AUTH_READ) {
                 unset($pages[$idx]);
             }
         }
@@ -538,25 +548,26 @@ class PageQuery {
      * @param array $filter     meta-data filter: <meta key>:<query>
      * @return array
      */
-    final public function filterMetadata(array $sort_array, array $filter): array {
-        foreach($filter as $metakey => $expr) {
+    final public function filterMetadata(array $sort_array, array $filter): array
+    {
+        foreach ($filter as $metakey => $expr) {
             // allow for exclusion matches (put ^ or ! in front of meta key)
             $exclude = false;
-            if($metakey[0] === '^' || $metakey[0] === '!') {
+            if ($metakey[0] === '^' || $metakey[0] === '!') {
                 $exclude = true;
                 $metakey = substr($metakey, 1);
             }
             $that       = $this;
             $sort_array = array_filter($sort_array, static function ($row) use ($metakey, $expr, $exclude, $that) {
-                if(!isset($row[$metakey])) {
+                if (!isset($row[$metakey])) {
                     return false;
                 }
-                if(strpos($metakey, 'date') !== false) {
+                if (strpos($metakey, 'date') !== false) {
                     $match = $that->filterByDate($expr, $row[$metakey]);
                 } else {
                     $match = preg_match('`' . $expr . '`', $row[$metakey]) > 0;
                 }
-                if($exclude) {
+                if ($exclude) {
                     $match = !$match;
                 }
                 return $match;
@@ -565,18 +576,19 @@ class PageQuery {
         return $sort_array;
     }
 
-    private function filterByDate($filter, $date): bool {
+    private function filterByDate($filter, $date): bool
+    {
         $filter  = str_replace('/', '.', $filter);  // allow for Euro style date formats
         $filters = explode('->', $filter);
         $begin   = (empty($filters[0]) ? null : strtotime($filters[0]));
         $end     = (empty($filters[1]) ? null : strtotime($filters[1]));
 
         $matched = false;
-        if($begin !== null && $end !== null) {
+        if ($begin !== null && $end !== null) {
             $matched = ($date >= $begin && $date <= $end);
-        } elseif($begin !== null) {
+        } elseif ($begin !== null) {
             $matched = ($date >= $begin);
-        } elseif($end !== null) {
+        } elseif ($end !== null) {
             $matched = ($date <= $end);
         }
         return $matched;
@@ -603,11 +615,12 @@ class PageQuery {
      *                                          $sort_opts['assoc'][<column>] = MSORT_KEEP_ASSOC | true
      * @return boolean
      */
-    final public function msort(array $sort_array, $sort_opts): bool {
+    final public function msort(array $sort_array, $sort_opts): bool
+    {
         // if a full sort_opts array was passed
         $keep_assoc = false;
-        if(is_array($sort_opts) && !empty($sort_opts)) {
-            if(isset($sort_opts['assoc'])) {
+        if (is_array($sort_opts) && !empty($sort_opts)) {
+            if (isset($sort_opts['assoc'])) {
                 $keep_assoc = true;
             }
         } else {
@@ -624,33 +637,32 @@ class PageQuery {
 
         // Sort the data and get the result.
         $result = $sort_func ($sort_array, function (array $left, array $right) use ($sort_opts, $keys, $self) {
-
             // Assume that the entries are the same.
             $cmp = 0;
 
             // Work through each sort column
-            foreach($keys as $idx => $key) {
+            foreach ($keys as $idx => $key) {
                 // Handle the different sort types.
-                switch($sort_opts['type'][$idx]) {
+                switch ($sort_opts['type'][$idx]) {
                     case $self::MSORT_NUMERIC:
-                        $key_cmp = (((int) $left[$key] == (int) $right[$key]) ?
-                            0 : (((int) $left[$key] < (int) $right[$key]) ? -1 : 1));
+                        $key_cmp = (((int)$left[$key] == (int)$right[$key]) ?
+                            0 : (((int)$left[$key] < (int)$right[$key]) ? -1 : 1));
                         break;
 
                     case $self::MSORT_STRING:
-                        $key_cmp = strcmp((string) $left[$key], (string) $right[$key]);
+                        $key_cmp = strcmp((string)$left[$key], (string)$right[$key]);
                         break;
 
                     case $self::MSORT_STRING_CASE: //case-insensitive
-                        $key_cmp = strcasecmp((string) $left[$key], (string) $right[$key]);
+                        $key_cmp = strcasecmp((string)$left[$key], (string)$right[$key]);
                         break;
 
                     case $self::MSORT_NAT:
-                        $key_cmp = strnatcmp((string) $left[$key], (string) $right[$key]);
+                        $key_cmp = strnatcmp((string)$left[$key], (string)$right[$key]);
                         break;
 
                     case $self::MSORT_NAT_CASE:    //case-insensitive
-                        $key_cmp = strnatcasecmp((string) $left[$key], (string) $right[$key]);
+                        $key_cmp = strnatcasecmp((string)$left[$key], (string)$right[$key]);
                         break;
 
                     case $self::MSORT_REGULAR:
@@ -661,7 +673,7 @@ class PageQuery {
                 }
 
                 // Is the column in the two arrays the same?
-                if($key_cmp == 0) {
+                if ($key_cmp == 0) {
                     continue;
                 }
 
@@ -689,27 +701,28 @@ class PageQuery {
      * @return array $results   : array of arrays: (level, name, page_id, title), e.g. array(1, 'Main Title')
      *                              array(0, '...') =>  0 = normal row item (not heading)
      */
-    final public function mgroup(array $sort_array, array $keys, $group_opts = array()): array {
+    final public function mgroup(array $sort_array, array $keys, $group_opts = array()): array
+    {
         $prevs   = array();
         $results = array();
         $idx     = 0;
 
-        if(empty($sort_array)) {
+        if (empty($sort_array)) {
             $results = array();
-        } elseif(empty($group_opts)) {
-            foreach($sort_array as $row) {
+        } elseif (empty($group_opts)) {
+            foreach ($sort_array as $row) {
                 $result = array(0);
-                foreach($keys as $key) {
+                foreach ($keys as $key) {
                     $result[] = $row[$key];
                 }
                 $results[] = $result;
             }
         } else {
             $level = count($group_opts['key']) - 1;
-            foreach($sort_array as $row) {
+            foreach ($sort_array as $row) {
                 $this->addHeading($results, $sort_array, $group_opts, $level, $idx, $prevs);
                 $result = array(0); // basic item (page link) is level 0
-                foreach($keys as $iValue) {
+                foreach ($keys as $iValue) {
                     $result[] = $row[$iValue];
                 }
                 $results[] = $result;
@@ -722,11 +735,12 @@ class PageQuery {
     /**
      * private function used by mgroup only!
      */
-    private function addHeading($results, $sort_array, $group_opts, $level, $idx, &$prevs): void {
+    private function addHeading($results, $sort_array, $group_opts, $level, $idx, &$prevs): void
+    {
         global $conf;
 
         // recurse to find all parent headings
-        if($level > 0) {
+        if ($level > 0) {
             $this->addHeading($results, $sort_array, $group_opts, $level - 1, $idx, $prevs);
         }
         $group_type = $group_opts['type'][$level];
@@ -734,27 +748,26 @@ class PageQuery {
         $prev = $prevs[$level] ?? '';
         $key  = $group_opts['key'][$level];
         $cur  = $sort_array[$idx][$key];
-        if($cur != $prev) {
+        if ($cur != $prev) {
             $prevs[$level] = $cur;
 
-            if($group_type === self::MGROUP_HEADING) {
+            if ($group_type === self::MGROUP_HEADING) {
                 $date_format = $group_opts['dformat'][$level];
-                if(!empty($date_format)) {
+                if (!empty($date_format)) {
                     // the real date is always the '__realdate__' column (MGROUP_REALDATE)
                     $cur = strftime($date_format, $sort_array[$idx][self::MGROUP_REALDATE]);
                 }
                 // args : $level, $name, $id, $_, $abstract, $display
                 $results[] = array($level + 1, $cur, '');
-
-            } elseif($group_type === self::MGROUP_NAMESPACE) {
+            } elseif ($group_type === self::MGROUP_NAMESPACE) {
                 $cur_ns  = explode(':', $cur);
                 $prev_ns = explode(':', $prev);
                 // only show namespaces that are different from the previous heading
-                for($i = 0, $iMax = count($cur_ns); $i < $iMax; $i++) {
-                    if($cur_ns[$i] != $prev_ns[$i]) {
+                for ($i = 0, $iMax = count($cur_ns); $i < $iMax; $i++) {
+                    if ($cur_ns[$i] != $prev_ns[$i]) {
                         $hl = $level + $i + 1;
                         $id = implode(':', array_slice($cur_ns, 0, $i + 1)) . ':' . $conf['start'];
-                        if(page_exists($id)) {
+                        if (page_exists($id)) {
                             $ns_start = $id;
                             // allow the first heading to be used instead of page id/name
                             $display = p_get_metadata($id, 'title');
@@ -780,8 +793,8 @@ class PageQuery {
      * @param int   $count => count of results
      * @return string => HTML rendered list
      */
-    protected function _render_as_html_table($sorted_results, $opt, $count): string {
-
+    protected function _render_as_html_table($sorted_results, $opt, $count): string
+    {
         $ratios           = array(.80, 1.3, 1.17, 1.1, 1.03, .96, .90);   // height ratios: link, h1, h2, h3, h4, h5, h6
         $render           = '';
         $prev_was_heading = false;
@@ -805,10 +818,10 @@ class PageQuery {
         // fixed anchor point to jump back to at top of the table
         $top_id = 'top-' . mt_rand();
 
-        if(!empty($opt['fontsize'])) {
+        if (!empty($opt['fontsize'])) {
             $fontsize = 'font-size:' . $opt['fontsize'];
         }
-        if($opt['bullet'] !== 'none') {
+        if ($opt['bullet'] !== 'none') {
             $list_style = 'list-style-position:inside;list-style-type:' . $opt['bullet'];
         }
         $can_indent = $opt['group'];
@@ -816,41 +829,40 @@ class PageQuery {
         $render .= '<div class="pagequery ' . $outer_border . " " . $tableless . '" id="' . $top_id . '" style="'
             . $fontsize . '">' . DOKU_LF;
 
-        if($opt['showcount'] === true) {
+        if ($opt['showcount'] === true) {
             $render .= '<div class="count">' . $count . '</div>' . DOKU_LF;
         }
-        if($opt['label'] !== '') {
+        if ($opt['label'] !== '') {
             $render .= '<h1 class="title">' . $opt['label'] . '</h1>' . DOKU_LF;
         }
-        if($multi_col) {
+        if ($multi_col) {
             $render .= '<table><tbody><tr>' . DOKU_LF;
         }
 
         // now render the pagequery list
-        foreach($sorted_results as $line) {
-
+        foreach ($sorted_results as $line) {
             [$level, $name, $id, $_, $abstract, $display] = $line;
 
             $heading    = '';
             $is_heading = ($level > 0);
-            if($is_heading) {
+            if ($is_heading) {
                 $heading = $name;
             }
 
             // is it time to start a new column?
-            if($can_start_col === false && $col < $opt['cols'] && $cur_height >= $col_height) {
+            if ($can_start_col === false && $col < $opt['cols'] && $cur_height >= $col_height) {
                 $can_start_col = true;
                 $col++;
             }
 
             // no need for indenting if there is no grouping
-            if($can_indent) {
+            if ($can_indent) {
                 $indent       = ($is_heading) ? $level - 1 : $cont_level - 1;
                 $indent_style = 'margin-left:' . $indent * 10 . 'px;';
             }
 
             // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
-            if($can_start_col && !$prev_was_heading) {
+            if ($can_start_col && !$prev_was_heading) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
                 $col_close     = (!$is_heading) ? '<a title="' . $jump_tip . '" href="#' . $top_id . '">'
@@ -869,18 +881,18 @@ class PageQuery {
             }
 
             // finally display the appropriate heading or page link(s)
-            if($is_heading) {
+            if ($is_heading) {
                 // close previous sub list if necessary
-                if(!$prev_was_heading) {
+                if (!$prev_was_heading) {
                     $render .= '</ul>' . DOKU_LF;
                 }
-                if($opt['nstitle'] && !empty($display)) {
+                if ($opt['nstitle'] && !empty($display)) {
                     $heading = $display;
                 }
-                if($opt['proper'] === 'header' || $opt['proper'] === 'both') {
+                if ($opt['proper'] === 'header' || $opt['proper'] === 'both') {
                     $heading = $this->proper($heading);
                 }
-                if(!empty($id)) {
+                if (!empty($id)) {
                     $heading = $this->htmlWikilink($id, $heading, '', $opt, false, true);
                 }
                 $render           .= '<h' . $level . ' style="' . $indent_style . '">' . $heading
@@ -889,11 +901,11 @@ class PageQuery {
                 $cont_level       = $level + 1;
             } else {
                 // open a new sub list if necessary
-                if($prev_was_heading || $is_first) {
+                if ($prev_was_heading || $is_first) {
                     $render .= '<ul style="' . $indent_style . $list_style . '">';
                 }
                 // deal with normal page links
-                if($opt['proper'] === 'name' || $opt['proper'] === 'both') {
+                if ($opt['proper'] === 'name' || $opt['proper'] === 'both') {
                     $display = $this->proper($display);
                 }
                 $link             = $this->htmlWikilink($id, $display, $abstract, $opt);
@@ -904,10 +916,10 @@ class PageQuery {
             $is_first   = false;
         }
         $render .= '</ul>' . DOKU_LF;
-        if($multi_col) {
+        if ($multi_col) {
             $render .= '</td></tr></tbody></table>' . DOKU_LF;
         }
-        if($opt['hidejump'] === false) {
+        if ($opt['hidejump'] === false) {
             $render .= '<a class="top" href="#' . $top_id . '">' . $this->lang['link_to_top'] . '</a>' . DOKU_LF;
         }
         $render .= '</div>' . DOKU_LF;
@@ -923,10 +935,11 @@ class PageQuery {
      * @param $ratios
      * @return int
      */
-    private function adjustedHeight($sorted_results, $ratios): int {
+    private function adjustedHeight($sorted_results, $ratios): int
+    {
         // ratio of different heading heights (%), to ensure more even use of columns (h1 -> h6)
         $adjusted_height = 0;
-        foreach($sorted_results as $row) {
+        foreach ($sorted_results as $row) {
             $adjusted_height += $ratios[$row[0]];
         }
         return $adjusted_height;
@@ -937,7 +950,8 @@ class PageQuery {
      * @param string $id page id
      * @return string
      */
-    private function proper(string $id): string {
+    private function proper(string $id): string
+    {
         $id = str_replace(':', ': ', $id); // make a little whitespace before words so ucwords can work!
         $id = str_replace('_', ' ', $id);
         $id = ucwords($id);
@@ -960,8 +974,8 @@ class PageQuery {
         string $abstract,
         array $opt,
         bool $track_snippets = true,
-        bool $raw = false): string {
-
+        bool $raw = false
+    ): string {
         $id = (strpos($id, ':') === false) ? ':' . $id : $id;   // : needed for root pages (root level)
 
         $link   = html_wikilink($id, $display);
@@ -969,34 +983,33 @@ class PageQuery {
         $inline = '';
         $after  = '';
 
-        if($type === 'tooltip') {
+        if ($type === 'tooltip') {
             $tooltip = str_replace("\n\n", "\n", $abstract);
             $tooltip = htmlentities($tooltip, ENT_QUOTES, 'UTF-8');
             $link    = $this->addTooltip($link, $tooltip);
-
-        } elseif(in_array($type, array('quoted', 'plain', 'inline')) && $this->snippet_cnt > 0) {
+        } elseif (in_array($type, array('quoted', 'plain', 'inline')) && $this->snippet_cnt > 0) {
             $short = $this->shorten($abstract, $opt['snippet']['extent']);
             $short = htmlentities($short, ENT_QUOTES, 'UTF-8');
-            if(!empty($short)) {
-                if($type === 'quoted' || $type === 'plain') {
+            if (!empty($short)) {
+                if ($type === 'quoted' || $type === 'plain') {
                     $more  = html_wikilink($id, 'more');
                     $after = trim($short);
                     $after = str_replace("\n\n", "\n", $after);
                     $after = str_replace("\n", '<br/>', $after);
                     $after = '<div class="' . $type . '">' . $after . $more . '</div>' . DOKU_LF;
-                } elseif($type === 'inline') {
+                } elseif ($type === 'inline') {
                     $inline .= '<span class=inline>' . $short . '</span>';
                 }
             }
         }
 
         $border = ($opt['underline']) ? 'border' : '';
-        if($raw) {
+        if ($raw) {
             $wikilink = $link . $inline;
         } else {
             $wikilink = '<li class="' . $border . '">' . $link . $inline . DOKU_LF . $after . '</li>';
         }
-        if($track_snippets) {
+        if ($track_snippets) {
             $this->snippet_cnt--;
         }
         return $wikilink;
@@ -1009,7 +1022,8 @@ class PageQuery {
      * @param string $tooltip title
      * @return string   complete href link
      */
-    private function addTooltip(string $link, string $tooltip): string {
+    private function addTooltip(string $link, string $tooltip): string
+    {
         $tooltip = str_replace("\n", '  ', $tooltip);
         return preg_replace('/title=\".+?\"/', 'title="' . $tooltip . '"', $link, 1);
     }
@@ -1024,20 +1038,21 @@ class PageQuery {
      * @param string $more   symbol to show if more text
      * @return  string
      */
-    private function shorten(string $text, string $extent, string $more = '... '): string {
+    private function shorten(string $text, string $extent, string $more = '... '): string
+    {
         $elem = $extent[0];
-        $cnt  = (int) substr($extent, 1);
-        switch($elem) {
+        $cnt  = (int)substr($extent, 1);
+        switch ($elem) {
             case 'c':
                 $result = substr($text, 0, $cnt);
-                if($cnt > 0 && strlen($result) < strlen($text)) {
+                if ($cnt > 0 && strlen($result) < strlen($text)) {
                     $result .= $more;
                 }
                 break;
             case 'w':
                 $words  = str_word_count($text, 1, '.');
                 $result = implode(' ', array_slice($words, 0, $cnt));
-                if($cnt > 0 && $cnt <= count($words) && $words[$cnt - 1] !== '.') {
+                if ($cnt > 0 && $cnt <= count($words) && $words[$cnt - 1] !== '.') {
                     $result .= $more;
                 }
                 break;
@@ -1045,7 +1060,7 @@ class PageQuery {
                 $lines  = explode("\n", $text);
                 $lines  = array_filter($lines);  // remove blank lines
                 $result = implode("\n", array_slice($lines, 0, $cnt));
-                if($cnt > 0 && $cnt < count($lines)) {
+                if ($cnt > 0 && $cnt < count($lines)) {
                     $result .= $more;
                 }
                 break;
@@ -1067,8 +1082,8 @@ class PageQuery {
      *
      * @return string HTML rendered list
      */
-    protected function _render_as_html_column(array $sorted_results, array $opt, int $count): string {
-
+    protected function _render_as_html_column(array $sorted_results, array $opt, int $count): string
+    {
         $prev_was_heading = false;
         $cont_level       = 1;
         $is_first         = true;
@@ -1090,14 +1105,13 @@ class PageQuery {
 
         // now prepare the actual pagequery list
         $pagequery = '';
-        foreach($sorted_results as $line) {
-
+        foreach ($sorted_results as $line) {
             [$level, $name, $id, $_, $abstract, $display] = $line;
 
             $is_heading = ($level > 0);
             $heading    = ($is_heading) ? $name : '';
 
-            if($can_indent) {
+            if ($can_indent) {
                 $indent       = ($is_heading) ? $level - 1 : $cont_level - 1;
                 $indent_style = 'margin-left:' . $indent * 10 . 'px;';
             } else {
@@ -1105,34 +1119,32 @@ class PageQuery {
             }
 
             // finally display the appropriate heading...
-            if($is_heading) {
-
+            if ($is_heading) {
                 // close previous subheading list if necessary
-                if(!$prev_was_heading) {
+                if (!$prev_was_heading) {
                     $pagequery .= '</ul>' . DOKU_LF;
                 }
-                if($opt['nstitle'] && !empty($display)) {
+                if ($opt['nstitle'] && !empty($display)) {
                     $heading = $display;
                 }
-                if($opt['proper'] === 'header' || $opt['proper'] === 'both') {
+                if ($opt['proper'] === 'header' || $opt['proper'] === 'both') {
                     $heading = $this->proper($heading);
                 }
-                if(!empty($id)) {
+                if (!empty($id)) {
                     $heading = $this->htmlWikilink($id, $heading, '', $opt, false, true);
                 }
                 $pagequery        .= '<h' . $level . ' style="' . $indent_style . '">' . $heading
                     . '</h' . $level . '>' . DOKU_LF;
                 $prev_was_heading = true;
                 $cont_level       = $level + 1;
-
                 // ...or page link(s)
             } else {
                 // open a new sub list if necessary
-                if($prev_was_heading || $is_first) {
+                if ($prev_was_heading || $is_first) {
                     $pagequery .= '<ul style="' . $indent_style . $list_style . '">';
                 }
                 // deal with normal page links
-                if($opt['proper'] === 'name' || $opt['proper'] === 'both') {
+                if ($opt['proper'] === 'name' || $opt['proper'] === 'both') {
                     $display = $this->proper($display);
                 }
                 $link             = $this->htmlWikilink($id, $display, $abstract, $opt);
