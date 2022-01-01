@@ -36,7 +36,7 @@ class PageQuery
      * @param string $error
      * @return string
      */
-    final public function render_as_empty($query, $error = ''): string
+    final public function renderAsEmpty($query, $error = ''): string
     {
         $render = '<div class="pagequery no-border">' . DOKU_LF;
         $render .= '<p class="no-results"><span>pagequery</span>' . sprintf(
@@ -50,7 +50,7 @@ class PageQuery
         return $render;
     }
 
-    final public function render_as_html(string $layout, $sorted_results, $opt, $count)
+    final public function renderAsHtml(string $layout, $sorted_results, $opt, $count)
     {
         $this->snippet_cnt = $opt['snippet']['count'];
         $render_type       = '_render_as_html_' . $layout;

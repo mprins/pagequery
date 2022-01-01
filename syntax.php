@@ -313,11 +313,11 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                 $sorted_results = $pq->mgroup($sort_array, $keys, $group_opts);
 
                 // and out to the page
-                $renderer->doc .= $pq->render_as_html($opt['layout'], $sorted_results, $opt, $count);
+                $renderer->doc .= $pq->renderAsHtml($opt['layout'], $sorted_results, $opt, $count);
                 // no results...
             } else {
                 if (!$opt['hidemsg']) {
-                    $renderer->doc .= $pq->render_as_empty($query, $message);
+                    $renderer->doc .= $pq->renderAsEmpty($query, $message);
                 }
             }
             return true;
