@@ -72,8 +72,7 @@ div.dokuwiki .pagequery .inner-border {
 
 div.dokuwiki .pagequery h1,
 div.dokuwiki .pagequery h2 {
-    column-break-after:avoid;
-    -moz-column-break-after:avoid;
+    break-after:avoid;
     -webkit-column-break-after:avoid;
 }
 
@@ -101,7 +100,7 @@ div.dokuwiki .pagequery h1 {
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
     font-size:134%;
-    padding:2px 0px 2px 7px;
+    padding:2px 0 2px 7px;
 }
 
 div.dokuwiki .pagequery h1.title {
@@ -131,7 +130,7 @@ div.dokuwiki .pagequery li {
     border: 0;
     color:#A0A0A0;
     line-height:135%;
-    margin-left:0px !important;
+    margin-left:0 !important;
 	padding-left:10px;
 	text-indent:-10px;
 }
