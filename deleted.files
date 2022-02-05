@@ -2,3 +2,8 @@
 # but were removed later. An up to date plugin should not have any of
 # the files installed
 inc/pagequery.php
+res/toolbar
+script.js
+images/pagequery.png
+images/blockquote.gif
+images/blockquote-icon.gif

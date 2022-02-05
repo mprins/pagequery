@@ -14,4 +14,3 @@ $lang['jump_to_top']  = 'Terug naar het begin van deze lijst';
 $lang['link_to_top']  = 'Omhoog ↑';
 $lang['regex_error']  = 'Er zit een fout in de reguliere expressie. Controleer en probeer het opnieuw.';
 $lang['empty_filter'] = 'De filter expressie heeft geen resultaat opgeleverd.';
-$lang['pagequery']    = 'PageQuery';
