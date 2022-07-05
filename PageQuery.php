@@ -962,7 +962,7 @@ class PageQuery
     /**
      * Renders the page link, plus tooltip, abstract, casing, etc...
      * @param string $id
-     * @param bool   $display
+     * @param string $display
      * @param string $abstract
      * @param array  $opt
      * @param bool   $track_snippets
@@ -971,16 +971,14 @@ class PageQuery
      */
     private function htmlWikilink(
         string $id,
-        bool $display,
+        string $display,
         string $abstract,
         array $opt,
         bool $track_snippets = true,
         bool $raw = false
     ): string {
         $id = (strpos($id, ':') === false) ? ':' . $id : $id;   // : needed for root pages (root level)
-        // TODO find out if this is an API change in DW
-        //        $link   = html_wikilink($id, $display);
-        $link   = html_wikilink($id);
+        $link   = html_wikilink($id, $display);
         $type   = $opt['snippet']['type'];
         $inline = '';
         $after  = '';
