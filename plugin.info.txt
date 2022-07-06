@@ -1,7 +1,7 @@
 base    pagequery
 author  Mark C. Prins, previously Symon Bent
 email   mprins@users.sf.net
-date    2022-02-05
+date    2022-07-06
 name    PageQuery Plugin
 desc    Search for (fulltext) and list wiki pages, sorted and optionally grouped by name, date, creator, abc, etc. in columns. Insert the pagequery markup wherever you want your list to appear.  E.g.{{pagequery>[query;fulltext;sort=key:direction,key2:direction;group;limit=??;cols=?;inwords;proper]}} [..] = optional
 url     https://www.dokuwiki.org/plugin:pagequery
