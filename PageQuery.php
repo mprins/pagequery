@@ -616,7 +616,7 @@ class PageQuery
      *                                          $sort_opts['assoc'][<column>] = MSORT_KEEP_ASSOC | true
      * @return boolean
      */
-    final public function msort(array $sort_array, $sort_opts): bool
+    final public function msort(array &$sort_array, $sort_opts): bool
     {
         // if a full sort_opts array was passed
         $keep_assoc = false;
@@ -736,7 +736,7 @@ class PageQuery
     /**
      * private function used by mgroup only!
      */
-    private function addHeading($results, $sort_array, $group_opts, $level, $idx, &$prevs): void
+    private function addHeading(&$results, $sort_array, $group_opts, $level, $idx, &$prevs): void
     {
         global $conf;
 
