@@ -866,7 +866,7 @@ class PageQuery
             //    1) we are at the start,
             //    2) last item was not a heading
             //    3) OR if the user turned grouping on
-            if ($can_start_col === true && $prev_was_heading === false
+            if ($can_start_col === true && $prev_was_heading === true
                     || $can_indent === true && $prev_was_heading === true) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
