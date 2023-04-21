@@ -862,12 +862,8 @@ class PageQuery
                 $indent_style = 'margin-left:' . $indent * 10 . 'px;';
             }
 
-            // Begin new column if:
-            //    1) we are at the start,
-            //    2) last item was not a heading
-            //    3) OR if the user turned grouping on
-            if ($can_start_col === true && $prev_was_heading === false
-                    || $can_indent === true && $prev_was_heading === true) {
+            // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
+            if ($can_start_col && !$prev_was_heading) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
                 $col_close     = (!$is_heading) ? '<a title="' . $jump_tip . '" href="#' . $top_id . '">'
