@@ -834,7 +834,7 @@ class PageQuery
             $render .= '<div class="count">' . $count . '</div>' . DOKU_LF;
         }
         if ($opt['label'] !== '') {
-            $render .= '<h1 class="title">' . $opt['label'].'</h1>' . DOKU_LF;
+            $render .= '<h1 class="title">' . $opt['label'] . '</h1>' . DOKU_LF;
         }
         if ($multi_col) {
             $render .= '<table><tbody><tr>' . DOKU_LF;
