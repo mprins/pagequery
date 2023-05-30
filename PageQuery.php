@@ -867,7 +867,8 @@ class PageQuery
                 && $prev_was_heading === false) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
-                $col_close     = (!$is_heading) ? '<a title="' . $jump_tip . '" href="#' . $top_id . '">'."</a>" : '';
+                $col_close     = (!$is_heading) ?
+                    '<a title="' . $jump_tip . '" href="#' . $top_id . '">'."</a>" : '';
                 $col_close     = (!$is_first) ? $col_close . '</ul></td>' . DOKU_LF : '';
                 $col_open      = (!$is_first && !$is_heading) ? '<h' . $cont_level . ' style="' . $indent_style . '">'
                     . $heading . '...</h' . $cont_level . '>' : '';
