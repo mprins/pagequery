@@ -863,7 +863,7 @@ class PageQuery
             }
 
             // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
-            if ($can_start_col === true 
+            if ($can_start_col === true
                 && $prev_was_heading === false) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
@@ -897,7 +897,8 @@ class PageQuery
                 if (!empty($id)) {
                     $heading = $this->htmlWikilink($id, $heading, '', $opt, false, true);
                 }
-                $render           .= '<a title="' . $jump_tip . '" href="#' . $top_id . '"><h' . $level . ' style="' . $indent_style . '">' . $heading
+                $render           .= '<a title="' . $jump_tip . '" href="#' . $top_id . '">
+                    <h' . $level . ' style="' . $indent_style . '">' . $heading
                     . '</h' . $level . '></a>' . DOKU_LF;
                 $prev_was_heading = true;
                 $cont_level       = $level + 1;
