@@ -863,7 +863,8 @@ class PageQuery
             }
 
             // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
-            if ($can_start_col === true && $prev_was_heading === false) {
+            if ($can_start_col === true 
+                && $prev_was_heading === false) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
                 $col_close     = (!$is_heading) ? '<a title="' . $jump_tip . '" href="#' . $top_id . '">'."</a>" : '';
