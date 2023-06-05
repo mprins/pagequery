@@ -863,11 +863,12 @@ class PageQuery
             }
 
             // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
-            if ($can_start_col && !$prev_was_heading) {
+            if ($can_start_col === true
+                && $prev_was_heading === false) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
-                $col_close     = (!$is_heading) ? '<a title="' . $jump_tip . '" href="#' . $top_id . '">'
-                    . "<h$cont_level>§... </h$cont_level></a>" : '';
+                $col_close     = (!$is_heading) ?
+                    '<a title="' . $jump_tip . '" href="#' . $top_id . '">'."</a>" : '';
                 $col_close     = (!$is_first) ? $col_close . '</ul></td>' . DOKU_LF : '';
                 $col_open      = (!$is_first && !$is_heading) ? '<h' . $cont_level . ' style="' . $indent_style . '">'
                     . $heading . '...</h' . $cont_level . '>' : '';
@@ -896,8 +897,9 @@ class PageQuery
                 if (!empty($id)) {
                     $heading = $this->htmlWikilink($id, $heading, '', $opt, false, true);
                 }
-                $render           .= '<h' . $level . ' style="' . $indent_style . '">' . $heading
-                    . '</h' . $level . '>' . DOKU_LF;
+                $render           .= '<a title="' . $jump_tip . '" href="#' . $top_id . '">
+                    <h' . $level . ' style="' . $indent_style . '">' . $heading
+                    . '</h' . $level . '></a>' . DOKU_LF;
                 $prev_was_heading = true;
                 $cont_level       = $level + 1;
             } else {
