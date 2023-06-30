@@ -7,3 +7,12 @@ script.js
 images/pagequery.png
 images/blockquote.gif
 images/blockquote-icon.gif
+
+
+_test/general.test.php
+
+.github/workflows/phpCS.yml
+.github/workflows/maintenance.yml
+.github/workflows/CI.yml
+.github/dependabot.yml
+.github/ISSUE_TEMPLATE.md
