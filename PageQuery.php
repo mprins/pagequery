@@ -266,7 +266,7 @@ class PageQuery
                         $value = $meta['date']['created'];
                     }
                     if (!is_null($value)) {
-                        if (strpos($key, 'date') !== false) {
+                        if (strpos($key, 'date') !== false && $value != '') {
                             $value = utf8_encode(strftime($opt['dformat'], $value));
                         }
                         $display = str_replace($match[0], $value, $display);
