@@ -1,5 +1,7 @@
 <?php
 
+use dokuwiki\Extension\SyntaxPlugin;
+
 /**
  * PageQuery Plugin: search for and list pages, sorted/grouped by name, date, creator, etc
  *
@@ -8,10 +10,9 @@
  *
  * @phpcs      :disable Squiz.Classes.ValidClassName.NotCamelCaps
  */
-class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
+class syntax_plugin_pagequery extends SyntaxPlugin
 {
-
-    const MAX_COLS = 12;
+    public const MAX_COLS = 12;
 
     public function getType(): string
     {
@@ -46,7 +47,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
      */
     public function handle($match, $state, $pos, Doku_Handler $handler): array
     {
-        $opt    = array();
+        $opt    = [];
         $match  = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
         $params = explode(';', $match);
         // remove any pre/trailing spaces due to multi-line syntax
@@ -61,7 +62,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
         $opt['cols']      = 1;          // number of displayed columns (fixed for table layout, max for column layout
         $opt['dformat']   = "%d %b %Y"; // general display date format
         $opt['display']   = 'name';     // how page links should be displayed
-        $opt['filter']    = array();    // filtering by metadata prior to sorting
+        $opt['filter']    = [];    // filtering by metadata prior to sorting
         $opt['fontsize']  = '';         // base fontsize of pagequery; best to use %
         $opt['fullregex'] = false;      // power-user regex search option--file name only
         $opt['fulltext']  = false;      // search full-text; including file contents
@@ -76,14 +77,14 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
         $opt['natsort']   = false;      // allow natural case sorting
         $opt['proper']    = 'none';     // display file names in Proper Case
         $opt['showcount'] = false;      // show the count of links found
-        $opt['snippet']   = array('type' => 'none', 'count' => 0, 'extent' => ''); // show content snippets/abstracts
-        $opt['sort']      = array();    // sort by various headings
+        $opt['snippet']   = ['type' => 'none', 'count' => 0, 'extent' => '']; // show content snippets/abstracts
+        $opt['sort']      = [];    // sort by various headings
         $opt['spelldate'] = false;      // spell out date headings in words where possible
         $opt['underline'] = false;      // faint underline below each link for clarity
         $opt['nstitle']   = false;      // internal use currently...
 
         foreach ($params as $param) {
-            list($option, $value) = $this->keyvalue($param, '=');
+            [$option, $value] = $this->keyvalue($param, '=');
             switch ($option) {
                 case 'casesort':
                 case 'fullregex':
@@ -106,7 +107,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                 case 'filter':
                     $fields = explode(',', $value);
                     foreach ($fields as $field) {
-                        list($key, $expr) = $this->keyvalue($field);
+                        [$key, $expr] = $this->keyvalue($field);
                         // allow for a few common naming differences
                         switch ($key) {
                             case 'pagename':
@@ -164,15 +165,15 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                         break;
                     } else {
                         $options = explode(',', $value);
-                        $type    = (!empty($options[0])) ? $options[0] : $opt['snippet']['type'];
-                        $count   = (!empty($options[1])) ? $options[1] : $opt['snippet']['count'];
-                        $extent  = (!empty($options[2])) ? $options[2] : $opt['snippet']['extent'];
+                        $type    = (empty($options[0])) ? $opt['snippet']['type'] : $options[0];
+                        $count   = (empty($options[1])) ? $opt['snippet']['count'] : $options[1];
+                        $extent  = (empty($options[2])) ? $opt['snippet']['extent'] : $options[2];
 
-                        $valid = array('none', 'tooltip', 'inline', 'plain', 'quoted');
+                        $valid = ['none', 'tooltip', 'inline', 'plain', 'quoted'];
                         if (!in_array($type, $valid)) {
                             $type = $default;  // empty snippet type => tooltip
                         }
-                        $opt['snippet'] = array('type' => $type, 'count' => $count, 'extent' => $extent);
+                        $opt['snippet'] = ['type' => $type, 'count' => $count, 'extent' => $extent];
                         break;
                     }
                 case 'label':
@@ -202,7 +203,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                     }
                     break;
                 case 'layout':
-                    if (!in_array($value, array('table', 'column'))) {
+                    if (!in_array($value, ['table', 'column'])) {
                         $value = 'table';
                     }
                     $opt['layout'] = $value;
@@ -222,29 +223,24 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
      *
      * @param string $str
      * @param string $delim
-     * @return array
      */
     private function keyvalue(string $str, string $delim = ':'): array
     {
         $parts = explode($delim, $str);
         $key   = $parts[0] ?? '';
         $value = $parts[1] ?? '';
-        return array($key, $value);
+        return [$key, $value];
     }
 
     public function render($format, Doku_Renderer $renderer, $data): bool
     {
-        $incl_ns    = array();
-        $excl_ns    = array();
-        $sort_opts  = array();
-        $group_opts = array();
+        $incl_ns    = [];
+        $excl_ns    = [];
+        $sort_opts  = [];
+        $group_opts = [];
         $message    = '';
 
-        $lang = array(
-            'jump_section' => $this->getLang('jump_section'),
-            'link_to_top'  => $this->getLang('link_to_top'),
-            'no_results'   => $this->getLang('no_results')
-        );
+        $lang = ['jump_section' => $this->getLang('jump_section'), 'link_to_top'  => $this->getLang('link_to_top'), 'no_results'   => $this->getLang('no_results')];
         require_once DOKU_PLUGIN . 'pagequery/PageQuery.php';
         $pq = new PageQuery($lang);
 
@@ -252,7 +248,6 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
 
         if ($format === 'xhtml') {
             // first get a raw list of matching results
-
             if ($data['fulltext']) {
                 // full text searching (Dokuwiki style)
                 $results = $pq->pageSearch($query);
@@ -262,7 +257,7 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                 // fullregex option considers entire query to be a regex
                 // over the whole page id, incl. namespace
                 if (!$data['fullregex']) {
-                    list($query, $incl_ns, $excl_ns) = $pq->parseNamespaceQuery($query);
+                    [$query, $incl_ns, $excl_ns] = $pq->parseNamespaceQuery($query);
                 }
 
                 // Allow for a lazy man's option!
@@ -273,7 +268,6 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                 $results = $pq->pageLookup($query, $data['fullregex'], $incl_ns, $excl_ns);
             }
             $results = $pq->validatePages($results, $data['hidestart'], $data['maxns']);
-
             $no_result = false;
             $sort_array = [];
             if ($results == false) {
@@ -281,57 +275,47 @@ class syntax_plugin_pagequery extends DokuWiki_Syntax_Plugin
                 $message   = $this->getLang('regex_error');
             } elseif (!empty($results)) {
                 // prepare the necessary sorting arrays, as per users options
-                list($sort_array, $sort_opts, $group_opts) = $pq->buildSortingArray($results, $data);
+                [$sort_array, $sort_opts, $group_opts] = $pq->buildSortingArray($results, $data);
 
                 // meta data filtering of the list is next
                 $sort_array = $pq->filterMetadata($sort_array, $data['filter']);
-                if (empty($sort_array)) {
+                if ($sort_array === []) {
                     $no_result = true;
                     $message   = $this->getLang("empty_filter");
                 }
             } else {
                 $no_result = true;
             }
-
             // successful search...
             if (!$no_result) {
                 // now do the sorting
                 $pq->msort($sort_array, $sort_opts);
-
                 // limit the result list length if required; this can only be done after sorting!
                 if ($data['limit'] > 0) {
                     $sort_array = array_slice($sort_array, 0, $data['limit']);
                 }
-
                 // do a link count BEFORE grouping (don't want to count headers...)
                 $count = count($sort_array);
-
                 // and finally the grouping
-                $keys = array('name', 'id', 'title', 'abstract', 'display');
+                $keys = ['name', 'id', 'title', 'abstract', 'display'];
                 if (!$data['group']) {
-                    $group_opts = array();
+                    $group_opts = [];
                 }
                 $sorted_results = $pq->mgroup($sort_array, $keys, $group_opts);
-
                 // and out to the page
                 $renderer->doc .= $pq->renderAsHtml($data['layout'], $sorted_results, $data, $count);
                 // no results...
-            } else {
-                if (!$data['hidemsg']) {
-                    $renderer->doc .= $pq->renderAsEmpty($query, $message);
-                }
+            } elseif (!$data['hidemsg']) {
+                $renderer->doc .= $pq->renderAsEmpty($query, $message);
             }
             return true;
+        } elseif ($format === 'metadata') {
+            // this is a pagequery page needing PARSER_CACHE_USE event trigger;
+            $renderer->meta['pagequery'] = true;
+            unset($renderer->persistent['pagequery']);
+            return true;
         } else {
-            if ($format === 'metadata') {
-                // this is a pagequery page needing PARSER_CACHE_USE event trigger;
-                $renderer->meta['pagequery'] = true;
-                unset($renderer->persistent['pagequery']);
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         }
     }
 }
-

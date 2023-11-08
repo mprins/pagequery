@@ -1,13 +1,16 @@
 <?php
 
+use dokuwiki\Extension\ActionPlugin;
+use dokuwiki\Extension\EventHandler;
+use dokuwiki\Extension\Event;
+
 /**
  *
  * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
  */
-class action_plugin_pagequery extends DokuWiki_Action_Plugin
+class action_plugin_pagequery extends ActionPlugin
 {
-
-    public function register(Doku_Event_Handler $controller)
+    public function register(EventHandler $controller)
     {
         $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'purgecache');
     }
@@ -20,7 +23,7 @@ class action_plugin_pagequery extends DokuWiki_Action_Plugin
      * @author Samuele Tognini <samuele@samuele.netsons.org>
      *
      */
-    public function purgecache(Doku_Event $event, $param)
+    public function purgecache(Event $event, $param)
     {
         global $ID;
         global $conf;
@@ -46,13 +49,11 @@ class action_plugin_pagequery extends DokuWiki_Action_Plugin
                 if ($_SERVER['REMOTE_USER']) {
                     $newkey = $_SERVER['REMOTE_USER'];
                 }
-            } else {
-                if ($aclcache === 'groups') {
-                    //Cache per groups
-                    global $INFO;
-                    if ($INFO['userinfo']['grps']) {
-                        $newkey = implode('#', $INFO['userinfo']['grps']);
-                    }
+            } elseif ($aclcache === 'groups') {
+                //Cache per groups
+                global $INFO;
+                if ($INFO['userinfo']['grps']) {
+                    $newkey = implode('#', $INFO['userinfo']['grps']);
                 }
             }
             if ($newkey) {
@@ -68,4 +69,3 @@ class action_plugin_pagequery extends DokuWiki_Action_Plugin
         }
     }
 }
-
