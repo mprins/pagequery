@@ -4,21 +4,21 @@ use dokuwiki\Utf8\PhpString;
 
 class PageQuery
 {
-    const MSORT_KEEP_ASSOC = 'msort01';
-    const MSORT_NUMERIC = 'msort02';
-    const MSORT_REGULAR = 'msort03';
-    const MSORT_STRING = 'msort04';
-    const MSORT_STRING_CASE = 'msort05';
-    const MSORT_NAT = 'msort06';
-    const MSORT_NAT_CASE = 'msort07';
-    const MSORT_ASC = 'msort08';
-    const MSORT_DESC = 'msort09';
-    const MSORT_DEFAULT_DIRECTION = self::MSORT_ASC;
-    const MSORT_DEFAULT_TYPE = self::MSORT_STRING;
-    const MGROUP_NONE = 'mgrp00';
-    const MGROUP_HEADING = 'mgrp01';
-    const MGROUP_NAMESPACE = 'mgrp02';
-    const MGROUP_REALDATE = '__realdate__';
+    public const MSORT_KEEP_ASSOC = 'msort01';
+    public const MSORT_NUMERIC = 'msort02';
+    public const MSORT_REGULAR = 'msort03';
+    public const MSORT_STRING = 'msort04';
+    public const MSORT_STRING_CASE = 'msort05';
+    public const MSORT_NAT = 'msort06';
+    public const MSORT_NAT_CASE = 'msort07';
+    public const MSORT_ASC = 'msort08';
+    public const MSORT_DESC = 'msort09';
+    public const MSORT_DEFAULT_DIRECTION = self::MSORT_ASC;
+    public const MSORT_DEFAULT_TYPE = self::MSORT_STRING;
+    public const MGROUP_NONE = 'mgrp00';
+    public const MGROUP_HEADING = 'mgrp01';
+    public const MGROUP_NAMESPACE = 'mgrp02';
+    public const MGROUP_REALDATE = '__realdate__';
     private $lang;
 
     // returns first $count letters from $text in lowercase
@@ -34,15 +34,14 @@ class PageQuery
      *
      * @param string $query => original query
      * @param string $error
-     * @return string
      */
     final public function renderAsEmpty($query, $error = ''): string
     {
         $render = '<div class="pagequery no-border">' . DOKU_LF;
         $render .= '<p class="no-results"><span>pagequery</span>' . sprintf(
-                $this->lang["no_results"],
-                '<strong>' . $query . '</strong>'
-            ) . '</p>' . DOKU_LF;
+            $this->lang["no_results"],
+            '<strong>' . $query . '</strong>'
+        ) . '</p>' . DOKU_LF;
         if (!empty($error)) {
             $render .= '<p class="no-results">' . $error . '</p>' . DOKU_LF;
         }
@@ -68,8 +67,8 @@ class PageQuery
         global $INFO;
 
         $cur_ns   = $INFO['namespace'];
-        $incl_ns  = array();
-        $excl_ns  = array();
+        $incl_ns  = [];
+        $excl_ns  = [];
         $page_qry = '';
         $tokens   = explode(' ', trim($query));
         if (count($tokens) == 1) {
@@ -86,7 +85,7 @@ class PageQuery
             }
         }
         $page_qry = trim($page_qry);
-        return array($page_qry, $incl_ns, $excl_ns);
+        return [$page_qry, $incl_ns, $excl_ns];
     }
 
     /**
@@ -103,18 +102,18 @@ class PageQuery
     {
         global $conf;
 
-        $sort_array = array();
-        $sort_opts  = array();
-        $group_opts = array();
+        $sort_array = [];
+        $sort_opts  = [];
+        $group_opts = [];
 
-        $dformat = array();
-        $wformat = array();
+        $dformat = [];
+        $wformat = [];
 
         $cnt = 0;
 
         // look for 'abc' by title instead of name ('abc' by page-id makes little sense)
         // title takes precedence over name (should you try to sort by both...why?)
-        $from_title = (isset($opt['sort']['title'])) ? true : false;
+        $from_title = isset($opt['sort']['title']);
 
         // is it necessary to cache the abstract column?
         $get_abstract = ($opt['snippet']['type'] !== 'none');
@@ -171,7 +170,7 @@ class PageQuery
             $real_date = 0;
 
             // ...optional columns
-            foreach ($col_keys as $key => $void) {
+            foreach (array_keys($col_keys) as $key) {
                 $value = '';
                 switch ($key) {
                     case 'a':
@@ -241,7 +240,7 @@ class PageQuery
 
             /* provide custom display formatting via string templating {...} */
 
-            $matches = array();
+            $matches = [];
             $display = $opt['display'];
             $matched = preg_match_all('/\{(.+?)\}/', $display, $matches, PREG_SET_ORDER);
 
@@ -362,7 +361,7 @@ class PageQuery
             }
         }
 
-        return array($sort_array, $sort_opts, $group_opts);
+        return [$sort_array, $sort_opts, $group_opts];
     }
 
     private function first(string $text, $count): string
@@ -390,11 +389,10 @@ class PageQuery
      * Parse the c|m-year-month-day option; used for sorting/grouping
      *
      * @param string $key
-     * @return string
      */
     private function dateFormat(string $key): string
     {
-        $dkey = array();
+        $dkey = [];
         if (strpos($key, 'year') !== false) {
             $dkey[] = '%Y';
         }
@@ -412,7 +410,6 @@ class PageQuery
      * used for display only ($dformat is used for sorting/grouping)
      *
      * @param string $dformat
-     * @return string
      */
     private function dateFormatWords(string $dformat): string
     {
@@ -493,7 +490,7 @@ class PageQuery
             return $pages;
         } else {
             // we always return an array type
-            return array();
+            return [];
         }
     }
 
@@ -502,7 +499,6 @@ class PageQuery
      * @param array  $pages   a list of wiki page ids
      * @param array  $ns_qry  namespace(s) to include/exclude
      * @param string $exclude true = exclude
-     * @return array
      */
     private function filterNamespaces(array $pages, array $ns_qry, string $exclude): array
     {
@@ -547,7 +543,6 @@ class PageQuery
      *
      * @param array $sort_array full sorting array, all meta columns included
      * @param array $filter     meta-data filter: <meta key>:<query>
-     * @return array
      */
     final public function filterMetadata(array $sort_array, array $filter): array
     {
@@ -614,13 +609,12 @@ class PageQuery
      *                                          $sort_opts['type'][<column>] = 'type'
      *                                          $sort_opts['dir'][<column>] = 'dir'
      *                                          $sort_opts['assoc'][<column>] = MSORT_KEEP_ASSOC | true
-     * @return boolean
      */
     final public function msort(array &$sort_array, $sort_opts): bool
     {
         // if a full sort_opts array was passed
         $keep_assoc = false;
-        if (is_array($sort_opts) && !empty($sort_opts)) {
+        if (is_array($sort_opts) && $sort_opts !== []) {
             if (isset($sort_opts['assoc'])) {
                 $keep_assoc = true;
             }
@@ -634,10 +628,10 @@ class PageQuery
         $keys = $sort_opts['key'];
 
         // HACK: self:: does not work inside a closure so...
-        $self = __CLASS__;
+        $self = self::class;
 
         // Sort the data and get the result.
-        $result = $sort_func ($sort_array, function (array $left, array $right) use ($sort_opts, $keys, $self) {
+        $result = $sort_func($sort_array, function (array $left, array $right) use ($sort_opts, $keys, $self) {
             // Assume that the entries are the same.
             $cmp = 0;
 
@@ -646,7 +640,7 @@ class PageQuery
                 // Handle the different sort types.
                 switch ($sort_opts['type'][$idx]) {
                     case $self::MSORT_NUMERIC:
-                        $key_cmp = (((int)$left[$key] == (int)$right[$key]) ?
+                        $key_cmp = (((int)$left[$key] === (int)$right[$key]) ?
                             0 : (((int)$left[$key] < (int)$right[$key]) ? -1 : 1));
                         break;
 
@@ -667,7 +661,7 @@ class PageQuery
                         break;
 
                     case $self::MSORT_REGULAR:
-                    default :
+                    default:
                         $key_cmp = (($left[$key] == $right[$key]) ?
                             0 : (($left[$key] < $right[$key]) ? -1 : 1));
                         break;
@@ -702,17 +696,17 @@ class PageQuery
      * @return array $results   : array of arrays: (level, name, page_id, title), e.g. array(1, 'Main Title')
      *                              array(0, '...') =>  0 = normal row item (not heading)
      */
-    final public function mgroup(array $sort_array, array $keys, $group_opts = array()): array
+    final public function mgroup(array $sort_array, array $keys, $group_opts = []): array
     {
-        $prevs   = array();
-        $results = array();
+        $prevs   = [];
+        $results = [];
         $idx     = 0;
 
-        if (empty($sort_array)) {
-            $results = array();
+        if ($sort_array === []) {
+            $results = [];
         } elseif (empty($group_opts)) {
             foreach ($sort_array as $row) {
-                $result = array(0);
+                $result = [0];
                 foreach ($keys as $key) {
                     $result[] = $row[$key];
                 }
@@ -722,7 +716,7 @@ class PageQuery
             $level = count($group_opts['key']) - 1;
             foreach ($sort_array as $row) {
                 $this->addHeading($results, $sort_array, $group_opts, $level, $idx, $prevs);
-                $result = array(0); // basic item (page link) is level 0
+                $result = [0]; // basic item (page link) is level 0
                 foreach ($keys as $iValue) {
                     $result[] = $row[$iValue];
                 }
@@ -759,13 +753,13 @@ class PageQuery
                     $cur = strftime($date_format, $sort_array[$idx][self::MGROUP_REALDATE]);
                 }
                 // args : $level, $name, $id, $_, $abstract, $display
-                $results[] = array($level + 1, $cur, '');
+                $results[] = [$level + 1, $cur, ''];
             } elseif ($group_type === self::MGROUP_NAMESPACE) {
                 $cur_ns  = explode(':', $cur);
                 $prev_ns = explode(':', $prev);
                 // only show namespaces that are different from the previous heading
                 for ($i = 0, $iMax = count($cur_ns); $i < $iMax; $i++) {
-                    if ($cur_ns[$i] != $prev_ns[$i]) {
+                    if ($cur_ns[$i] !== $prev_ns[$i]) {
                         $hl = $level + $i + 1;
                         $id = implode(':', array_slice($cur_ns, 0, $i + 1)) . ':' . $conf['start'];
                         if (page_exists($id)) {
@@ -773,10 +767,11 @@ class PageQuery
                             // allow the first heading to be used instead of page id/name
                             $display = p_get_metadata($id, 'title');
                         } else {
-                            $ns_start = $display = '';
+                            $ns_start = '';
+                            $display = '';
                         }
                         // args : $level, $name, $id, $_, $abstract, $display
-                        $results[] = array($hl, $cur_ns[$i], $ns_start, '', '', $display);
+                        $results[] = [$hl, $cur_ns[$i], $ns_start, '', '', $display];
                     }
                 }
             }
@@ -796,7 +791,7 @@ class PageQuery
      */
     protected function renderAsHtmltable($sorted_results, $opt, $count): string
     {
-        $ratios           = array(.80, 1.3, 1.17, 1.1, 1.03, .96, .90);   // height ratios: link, h1, h2, h3, h4, h5, h6
+        $ratios           = [.80, 1.3, 1.17, 1.1, 1.03, .96, .90];   // height ratios: link, h1, h2, h3, h4, h5, h6
         $render           = '';
         $prev_was_heading = false;
         $can_start_col    = true;
@@ -814,10 +809,10 @@ class PageQuery
         // basic result page markup (always needed)
         $outer_border = ($opt['border'] === 'outside' || $opt['border'] === 'both') ? 'border' : '';
         $inner_border = ($opt['border'] === 'inside' || $opt['border'] === 'both') ? 'border' : '';
-        $tableless    = (!$multi_col) ? 'tableless' : '';
+        $tableless    = ($multi_col) ? '' : 'tableless';
 
         // fixed anchor point to jump back to at top of the table
-        $top_id = 'top-' . mt_rand();
+        $top_id = 'top-' . random_int(0, mt_getrandmax());
 
         if (!empty($opt['fontsize'])) {
             $fontsize = 'font-size:' . $opt['fontsize'];
@@ -863,13 +858,15 @@ class PageQuery
             }
 
             // Begin new column if: 1) we are at the start, 2) last item was not a heading or 3) if there is no grouping
-            if ($can_start_col === true
-                && $prev_was_heading === false) {
+            if (
+                $can_start_col
+                && $prev_was_heading === false
+            ) {
                 $jump_tip = sprintf($this->lang['jump_section'], $heading);
                 // close the previous column if necessary; also adds a 'jump to anchor'
-                $col_close     = (!$is_heading) ?
-                    '<a title="' . $jump_tip . '" href="#' . $top_id . '">'."</a>" : '';
-                $col_close     = (!$is_first) ? $col_close . '</ul></td>' . DOKU_LF : '';
+                $col_close     = ($is_heading) ?
+                    '' : '<a title="' . $jump_tip . '" href="#' . $top_id . '">' . "</a>";
+                $col_close     = ($is_first) ? '' : $col_close . '</ul></td>' . DOKU_LF;
                 $col_open      = (!$is_first && !$is_heading) ? '<h' . $cont_level . ' style="' . $indent_style . '">'
                     . $heading . '...</h' . $cont_level . '>' : '';
                 $td            = ($multi_col) ? '<td class="' . $inner_border . '" valign="top" width="'
@@ -936,7 +933,6 @@ class PageQuery
      *
      * @param $sorted_results
      * @param $ratios
-     * @return int
      */
     private function adjustedHeight($sorted_results, $ratios): int
     {
@@ -951,7 +947,6 @@ class PageQuery
     /**
      * Changes a wiki page id into proper case (allowing for :'s etc...)
      * @param string $id page id
-     * @return string
      */
     private function proper(string $id): string
     {
@@ -969,7 +964,6 @@ class PageQuery
      * @param array  $opt
      * @param bool   $track_snippets
      * @param bool   $raw non-formatted (no html)
-     * @return string
      */
     private function htmlWikilink(
         string $id,
@@ -989,7 +983,7 @@ class PageQuery
             $tooltip = str_replace("\n\n", "\n", $abstract);
             $tooltip = htmlentities($tooltip, ENT_QUOTES, 'UTF-8');
             $link    = $this->addTooltip($link, $tooltip);
-        } elseif (in_array($type, array('quoted', 'plain', 'inline')) && $this->snippet_cnt > 0) {
+        } elseif (in_array($type, ['quoted', 'plain', 'inline']) && $this->snippet_cnt > 0) {
             $short = $this->shorten($abstract, $opt['snippet']['extent']);
             $short = htmlentities($short, ENT_QUOTES, 'UTF-8');
             if (!empty($short)) {
@@ -1031,14 +1025,12 @@ class PageQuery
     }
 
     // real date column
-
     /**
      * Return the first part of the text according to the extent given.
      *
      * @param string $text
      * @param string $extent c? = ? chars, w? = ? words, l? = ? lines, ~? = search up to text/char/symbol
      * @param string $more   symbol to show if more text
-     * @return  string
      */
     private function shorten(string $text, string $extent, string $more = '... '): string
     {
@@ -1067,7 +1059,7 @@ class PageQuery
                 }
                 break;
             case "~":
-                $result = strstr($text, $cnt, true);
+                $result = strstr($text, (string) $cnt, true);
                 break;
             default:
                 $result = $text;
@@ -1089,10 +1081,10 @@ class PageQuery
         $prev_was_heading = false;
         $cont_level       = 1;
         $is_first         = true;
-        $top_id           = 'top-' . mt_rand();   // A fixed anchor at top to jump back to
+        $top_id           = 'top-' . random_int(0, mt_getrandmax());   // A fixed anchor at top to jump back to
 
         // CSS for the various display options
-        $fontsize     = (!empty($opt['fontsize'])) ? 'font-size:' . $opt['fontsize'] : '';
+        $fontsize     = (empty($opt['fontsize'])) ? '' : 'font-size:' . $opt['fontsize'];
         $outer_border = ($opt['border'] === 'outside' || $opt['border'] === 'both') ? 'border' : '';
         $inner_border = ($opt['border'] === 'inside' || $opt['border'] === 'both') ? 'inner-border' : '';
         $show_count   = ($opt['showcount'] === true) ? '<div class="count">' . $count . ' ∞</div>' . DOKU_LF : '';
@@ -1167,5 +1159,4 @@ class PageQuery
         $render .= '</div></div>' . DOKU_LF;
         return $render;
     }
-
-} 
+}
