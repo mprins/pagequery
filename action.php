@@ -18,10 +18,9 @@ class action_plugin_pagequery extends ActionPlugin
     /**
      * Check for pages changes and eventually purge cache.
      *
-     * @param Doku_Event $event
+     * @param Event $event
      * @param mixed      $param not defined
      * @author Samuele Tognini <samuele@samuele.netsons.org>
-     *
      */
     public function purgecache(Event $event, $param)
     {
