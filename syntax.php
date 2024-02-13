@@ -268,13 +268,13 @@ class syntax_plugin_pagequery extends SyntaxPlugin
                 // search by page name or path only
                 $results = $pq->pageLookup($query, $data['fullregex'], $incl_ns, $excl_ns);
             }
-            $results = $pq->validatePages($results, $data['hidestart'], $data['maxns']);
             $no_result = false;
             $sort_array = [];
             if ($results == false) {
                 $no_result = true;
                 $message   = $this->getLang('regex_error');
             } elseif (!empty($results)) {
+                $results = $pq->validatePages($results, $data['hidestart'], $data['maxns']);
                 // prepare the necessary sorting arrays, as per users options
                 [$sort_array, $sort_opts, $group_opts] = $pq->buildSortingArray($results, $data);
 
