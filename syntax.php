@@ -240,7 +240,8 @@ class syntax_plugin_pagequery extends SyntaxPlugin
         $group_opts = [];
         $message    = '';
 
-        $lang = ['jump_section' => $this->getLang('jump_section'), 'link_to_top'  => $this->getLang('link_to_top'), 'no_results'   => $this->getLang('no_results')];
+        $lang = ['jump_section' => $this->getLang('jump_section'), 'link_to_top'  => $this->getLang('link_to_top'),
+            'no_results'   => $this->getLang('no_results')];
         require_once DOKU_PLUGIN . 'pagequery/PageQuery.php';
         $pq = new PageQuery($lang);
 
