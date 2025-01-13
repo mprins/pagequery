@@ -77,11 +77,11 @@ class PageQuery
         } else {
             foreach ($tokens as $token) {
                 if (preg_match('/^(?:\^|-ns:)(.+)$/u', $token, $matches)) {
-                   $resolver = new PageResolver($cur_ns);
-                   $excl_ns[] = resolve_id($cur_ns, $matches[1]);
+                    $resolver = new PageResolver($cur_ns);
+                    $excl_ns[] = resolve_id($cur_ns, $matches[1]);
                 } elseif (preg_match('/^(?:@|ns:)(.+)$/u', $token, $matches)) {
-                   $resolver = new PageResolver($cur_ns);
-                   $incl_ns[] = $resolver->resolveId($matches[1]);
+                    $resolver = new PageResolver($cur_ns);
+                    $incl_ns[] = $resolver->resolveId($matches[1]);
                 } else {
                     $page_qry .= ' ' . $token;
                 }
@@ -840,12 +840,12 @@ class PageQuery
 
         // now render the pagequery list
         foreach ($sorted_results as $line) {
-           $level = $line[0] ?? '';
-           $name = $line[1] ?? '';
-           $id = $line[2] ?? '';
-           $_ = $line[3] ?? '';
-           $abstract = $line[4] ?? '';
-           $display = $line[5] ?? '';
+            $level = $line[0] ?? '';
+            $name = $line[1] ?? '';
+            $id = $line[2] ?? '';
+            $_ = $line[3] ?? '';
+            $abstract = $line[4] ?? '';
+            $display = $line[5] ?? '';
 
             $heading    = '';
             $is_heading = ($level > 0);
