@@ -65,9 +65,6 @@ class PageQuery
      */
     final public function parseNamespaceQuery(string $query): array
     {
-        global $INFO;
-
-        $cur_ns   = $INFO['namespace'];
         $incl_ns  = [];
         $excl_ns  = [];
         $page_qry = '';
@@ -77,11 +74,9 @@ class PageQuery
         } else {
             foreach ($tokens as $token) {
                 if (preg_match('/^(?:\^|-ns:)(.+)$/u', $token, $matches)) {
-                    $resolver = new PageResolver($cur_ns);
-                    $excl_ns[] = resolve_id($cur_ns, $matches[1]);
+                    $excl_ns[] = $this->resolveNamespace($matches[1]);
                 } elseif (preg_match('/^(?:@|ns:)(.+)$/u', $token, $matches)) {
-                    $resolver = new PageResolver($cur_ns);
-                    $incl_ns[] = $resolver->resolveId($matches[1]);
+                    $incl_ns[] = $this->resolveNamespace($matches[1]);
                 } else {
                     $page_qry .= ' ' . $token;
                 }
@@ -1166,5 +1161,21 @@ class PageQuery
         $render .= '</ul>' . DOKU_LF;
         $render .= '</div></div>' . DOKU_LF;
         return $render;
+    }
+
+    /**
+     * Resolve a given namespace to an absolute one
+     *
+     * @param string $namespace
+     * @return string   the resolved absolute namespace
+     */
+    private function resolveNamespace(string $namespace): string
+    {
+        global $INFO;
+
+        $namespace = $namespace . ':dummypagename';
+        $resolver = new PageResolver($INFO['id']);
+
+        return getNS($resolver->resolveId($namespace));
     }
 }
