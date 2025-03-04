@@ -1173,7 +1173,7 @@ class PageQuery
     {
         global $INFO;
 
-        $namespace = $namespace . ':dummypagename';
+        $namespace .= ':dummypagename';
         $resolver = new PageResolver($INFO['id']);
 
         return getNS($resolver->resolveId($namespace));
