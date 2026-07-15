@@ -1,5 +1,6 @@
 <?php
 
+use dokuwiki\Parsing\Handler;
 use dokuwiki\Extension\SyntaxPlugin;
 
 /**
@@ -45,13 +46,13 @@ class syntax_plugin_pagequery extends SyntaxPlugin
      *
      * @link https://www.dokuwiki.org/plugin:pagequery See PageQuery page for full details
      */
-    public function handle($match, $state, $pos, Doku_Handler $handler): array
+    public function handle($match, $state, $pos, Handler $handler): array
     {
         $opt    = [];
         $match  = substr($match, 12, -2); // strip markup "{{pagequery>...}}"
         $params = explode(';', $match);
         // remove any pre/trailing spaces due to multi-line syntax
-        $params = array_map('trim', $params);
+        $params = array_map(trim(...), $params);
 
         $opt['query'] = $params[0];
 
@@ -129,34 +130,20 @@ class syntax_plugin_pagequery extends SyntaxPlugin
                     }
                     break;
                 case 'proper':
-                    switch ($value) {
-                        case 'hdr':
-                        case 'header':
-                        case 'group':
-                            $opt['proper'] = 'header';
-                            break;
-                        case 'name':
-                        case 'page':
-                            $opt['proper'] = 'name';
-                            break;
-                        default:
-                            $opt['proper'] = 'both';
-                    }
+                    $opt['proper'] = match ($value) {
+                        'hdr', 'header', 'group' => 'header',
+                        'name', 'page' => 'name',
+                        default => 'both',
+                    };
                     break;
                 case 'cols':
                     $opt['cols'] = ($value > self::MAX_COLS) ? self::MAX_COLS : $value;
                     break;
                 case 'border':
-                    switch ($value) {
-                        case 'both':
-                        case 'inside':
-                        case 'outside':
-                        case 'none':
-                            $opt['border'] = $value;
-                            break;
-                        default:
-                            $opt['border'] = 'both';
-                    }
+                    $opt['border'] = match ($value) {
+                        'both', 'inside', 'outside', 'none' => $value,
+                        default => 'both',
+                    };
                     break;
                 case 'snippet':
                     $default = 'tooltip';
