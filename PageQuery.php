@@ -288,21 +288,14 @@ class PageQuery
             $sort_opts['key'][] = $key;
 
             // now the sort direction
-            switch ($value) {
-                case 'a':
-                case 'asc':
-                    $dir = self::MSORT_ASC;
-                    break;
-                case 'd':
-                case 'desc':
-                    $dir = self::MSORT_DESC;
-                    break;
-                default:
-                    $dir = match ($key) {
-                        'a', 'ab', 'abc', 'name', 'title', 'id', 'ns', 'creator', 'contributor' => self::MSORT_ASC,
-                        default => self::MSORT_DESC,
-                    };
-            }
+            $dir = match ($value) {
+                'a', 'asc' => self::MSORT_ASC,
+                'd', 'desc' => self::MSORT_DESC,
+                default => match ($key) {
+                    'a', 'ab', 'abc', 'name', 'title', 'id', 'ns', 'creator', 'contributor' => self::MSORT_ASC,
+                    default => self::MSORT_DESC,
+                },
+            };
             $sort_opts['dir'][] = $dir;
 
             // set the sort array's data type
