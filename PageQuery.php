@@ -252,7 +252,7 @@ class PageQuery
                     } elseif (isset($meta[$key])) {
                         $value = $meta[$key];
                         // allow for nested meta keys (e.g. date:created)
-                    } elseif (strpos($key, ':') !== false) {
+                    } elseif (str_contains($key, ':')) {
                         $keys = explode(':', $key);
                         if (isset($meta[$keys[0]][$keys[1]])) {
                             $value = $meta[$keys[0]][$keys[1]];
@@ -263,7 +263,7 @@ class PageQuery
                         $value = $meta['date']['created'];
                     }
                     if (!is_null($value)) {
-                        if (strpos($key, 'date') !== false && $value != '') {
+                        if (str_contains($key, 'date') && $value != '') {
                             $value = utf8_encode(strftime($opt['dformat'], $value));
                         }
                         $display = str_replace($match[0], $value, $display);
@@ -298,23 +298,10 @@ class PageQuery
                     $dir = self::MSORT_DESC;
                     break;
                 default:
-                    switch ($key) {
-                        // sort dates descending by default; text ascending
-                        case 'a':
-                        case 'ab':
-                        case 'abc':
-                        case 'name':
-                        case 'title':
-                        case 'id':
-                        case 'ns':
-                        case 'creator':
-                        case 'contributor':
-                            $dir = self::MSORT_ASC;
-                            break;
-                        default:
-                            $dir = self::MSORT_DESC;
-                            break;
-                    }
+                    $dir = match ($key) {
+                        'a', 'ab', 'abc', 'name', 'title', 'id', 'ns', 'creator', 'contributor' => self::MSORT_ASC,
+                        default => self::MSORT_DESC,
+                    };
             }
             $sort_opts['dir'][] = $dir;
 
@@ -336,21 +323,11 @@ class PageQuery
             $sort_opts['type'][] = $type;
 
             // now establish grouping options
-            switch ($key) {
-                // name strings and full dates cannot be meaningfully grouped (no duplicates!)
-                case 'mdate':
-                case 'cdate':
-                case 'name':
-                case 'title':
-                case 'id':
-                    $group_by = self::MGROUP_NONE;
-                    break;
-                case 'ns':
-                    $group_by = self::MGROUP_NAMESPACE;
-                    break;
-                default:
-                    $group_by = self::MGROUP_HEADING;
-            }
+            $group_by = match ($key) {
+                'mdate', 'cdate', 'name', 'title', 'id' => self::MGROUP_NONE,
+                'ns' => self::MGROUP_NAMESPACE,
+                default => self::MGROUP_HEADING,
+            };
             if ($group_by !== self::MGROUP_NONE) {
                 $group_opts['key'][$idx]     = $key;
                 $group_opts['type'][$idx]    = $group_by;
@@ -391,13 +368,13 @@ class PageQuery
     private function dateFormat(string $key): string
     {
         $dkey = [];
-        if (strpos($key, 'year') !== false) {
+        if (str_contains($key, 'year')) {
             $dkey[] = '%Y';
         }
-        if (strpos($key, 'month') !== false) {
+        if (str_contains($key, 'month')) {
             $dkey[] = '%m';
         }
-        if (strpos($key, 'day') !== false) {
+        if (str_contains($key, 'day')) {
             $dkey[] = '%d';
         }
         return implode('-', $dkey);
@@ -412,23 +389,14 @@ class PageQuery
     private function dateFormatWords(string $dformat): string
     {
         $wformat = '';
-        switch ($dformat) {
-            case '%m':
-                $wformat = "%B";
-                break;
-            case '%d':
-                $wformat = "%#d–%A ";
-                break;
-            case '%Y-%m':
-                $wformat = "%B %Y";
-                break;
-            case '%m-%d':
-                $wformat = "%B %#d, %A ";
-                break;
-            case '%Y-%m-%d':
-                $wformat = "%A, %B %#d, %Y";
-                break;
-        }
+        $wformat = match ($dformat) {
+            '%m' => "%B",
+            '%d' => "%#d–%A ",
+            '%Y-%m' => "%B %Y",
+            '%m-%d' => "%B %#d, %A ",
+            '%Y-%m-%d' => "%A, %B %#d, %Y",
+            default => $wformat,
+        };
         return $wformat;
     }
 
@@ -518,7 +486,7 @@ class PageQuery
     {
         global $conf;
 
-        $pages = array_map('trim', $pages);
+        $pages = array_map(trim(...), $pages);
 
         // check ACL permissions, too many ns levels, and remove any 'start' pages as needed
         $start  = $conf['start'];
@@ -556,7 +524,7 @@ class PageQuery
                 if (!isset($row[$metakey])) {
                     return false;
                 }
-                if (strpos($metakey, 'date') !== false) {
+                if (str_contains($metakey, 'date')) {
                     $match = $that->filterByDate($expr, $row[$metakey]);
                 } else {
                     $match = preg_match('`' . $expr . '`', $row[$metakey]) > 0;
@@ -636,34 +604,18 @@ class PageQuery
             // Work through each sort column
             foreach ($keys as $idx => $key) {
                 // Handle the different sort types.
-                switch ($sort_opts['type'][$idx]) {
-                    case $self::MSORT_NUMERIC:
-                        $key_cmp = (((int)$left[$key] === (int)$right[$key]) ?
-                            0 : (((int)$left[$key] < (int)$right[$key]) ? -1 : 1));
-                        break;
-
-                    case $self::MSORT_STRING:
-                        $key_cmp = strcmp((string)$left[$key], (string)$right[$key]);
-                        break;
-
-                    case $self::MSORT_STRING_CASE: //case-insensitive
-                        $key_cmp = strcasecmp((string)$left[$key], (string)$right[$key]);
-                        break;
-
-                    case $self::MSORT_NAT:
-                        $key_cmp = strnatcmp((string)$left[$key], (string)$right[$key]);
-                        break;
-
-                    case $self::MSORT_NAT_CASE:    //case-insensitive
-                        $key_cmp = strnatcasecmp((string)$left[$key], (string)$right[$key]);
-                        break;
-
-                    case $self::MSORT_REGULAR:
-                    default:
-                        $key_cmp = (($left[$key] == $right[$key]) ?
-                            0 : (($left[$key] < $right[$key]) ? -1 : 1));
-                        break;
-                }
+                $key_cmp = match ($sort_opts['type'][$idx]) {
+                    $self::MSORT_NUMERIC => ((int)$left[$key] === (int)$right[$key]) ?
+                        0 : (((int)$left[$key] < (int)$right[$key]) ? -1 : 1),
+                    $self::MSORT_STRING => strcmp((string)$left[$key], (string)$right[$key]),
+                    //case-insensitive
+                    $self::MSORT_STRING_CASE => strcasecmp((string)$left[$key], (string)$right[$key]),
+                    $self::MSORT_NAT => strnatcmp((string)$left[$key], (string)$right[$key]),
+                    //case-insensitive
+                    $self::MSORT_NAT_CASE => strnatcasecmp((string)$left[$key], (string)$right[$key]),
+                    default => ($left[$key] == $right[$key]) ?
+                        0 : (($left[$key] < $right[$key]) ? -1 : 1),
+                };
 
                 // Is the column in the two arrays the same?
                 if ($key_cmp == 0) {
@@ -976,7 +928,7 @@ class PageQuery
         bool $track_snippets = true,
         bool $raw = false
     ): string {
-        $id = (strpos($id, ':') === false) ? ':' . $id : $id;   // : needed for root pages (root level)
+        $id = (str_contains($id, ':')) ? $id : ':' . $id;   // : needed for root pages (root level)
         $link   = html_wikilink($id, $display);
         $type   = $opt['snippet']['type'];
         $inline = '';
