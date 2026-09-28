@@ -194,7 +194,7 @@ class PageQuery
                         $value = $meta['creator'];
                         break;
                     case 'contributor':
-                        $value = implode(' ', $meta['contributor']);
+                        $value = implode(' ', $meta['contributor'] ?? []);
                         break;
                     case 'mdate':
                         $value = $meta['date']['modified'];
