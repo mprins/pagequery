@@ -702,7 +702,8 @@ class PageQuery
                 $prev_ns = explode(':', $prev);
                 // only show namespaces that are different from the previous heading
                 for ($i = 0, $iMax = count($cur_ns); $i < $iMax; $i++) {
-                    if ($cur_ns[$i] !== $prev_ns[$i]) {
+                    // the previous namespace may be shallower than the current one
+                    if ($cur_ns[$i] !== ($prev_ns[$i] ?? null)) {
                         $hl = $level + $i + 1;
                         $id = implode(':', array_slice($cur_ns, 0, $i + 1)) . ':' . $conf['start'];
                         if (page_exists($id)) {
